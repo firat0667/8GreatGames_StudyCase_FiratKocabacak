@@ -13,7 +13,7 @@ namespace GreatGames.CaseLib.Grid
         [SerializeField] private GridStructure _lowerGrid;
         [SerializeField] private GameObject _slotPrefab;
 
-        [Header("Grid Offsets")]
+        [Header("Grid Offsets")] 
         [SerializeField] private Vector3 _slinkyGridOffset = new Vector3(0, 0, 0);
         [SerializeField] private Vector3 _mergeGridOffset = new Vector3(0, -1, 0);
 
@@ -30,6 +30,12 @@ namespace GreatGames.CaseLib.Grid
 
         public void InitializeGrids(Vector2Int upperSize, Vector2Int lowerSize, Transform levelParent)
         {
+            if (upperSize.x <= 0 || upperSize.y <= 0 || lowerSize.x <= 0 || lowerSize.y <= 0)
+            {
+                Debug.LogError("Grid size should be bigger than zero");
+                return;
+            }
+
             if (_gridParent == null)
             {
                 _gridParent = new GameObject("Grid Parent").transform;
@@ -42,13 +48,13 @@ namespace GreatGames.CaseLib.Grid
                 _slinkyParent.SetParent(levelParent);
             }
 
-            _upperGrid = new GridStructure(upperSize, _slinkyGridOffset, _slotPrefab);
-            _lowerGrid = new GridStructure(lowerSize, _mergeGridOffset, _slotPrefab);
+            _upperGrid ??= new GridStructure(upperSize, _slinkyGridOffset, _slotPrefab);
+            _lowerGrid ??= new GridStructure(lowerSize, _mergeGridOffset, _slotPrefab);
 
             _upperGrid.InitializeGrid(_gridParent);
             _lowerGrid.InitializeGrid(_gridParent);
 
-            OnGridUpdated?.Emit(); 
+            OnGridUpdated?.Emit();
         }
 
         public bool TryPlaceSlinky(GameKey slotKey, SlinkyData slinky, bool isUpperGrid)
@@ -60,12 +66,14 @@ namespace GreatGames.CaseLib.Grid
             if (targetGrid.TryGetSlot(slotKey, out GridData slot))
             {
                 slot.SetOccupied(true);
+                targetGrid.SetSlotOccupied(slotKey, true); 
                 OnGridUpdated?.Emit();
                 return true;
             }
 
             return false;
         }
+
 
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
         {
@@ -75,6 +83,11 @@ namespace GreatGames.CaseLib.Grid
         public Vector3 GetSlotPosition(GameKey key, bool isUpperGrid)
         {
             return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
+        }
+
+        public GameKey GetFirstEmptySlot(bool isUpperGrid)
+        {
+            return isUpperGrid ? _upperGrid.GetFirstEmptySlot() : _lowerGrid.GetFirstEmptySlot();
         }
     }
 }

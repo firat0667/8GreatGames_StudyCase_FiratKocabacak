@@ -1,9 +1,10 @@
-using System.Collections.Generic;
-using UnityEngine;
-using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.DI;
-using GreatGames.CaseLib.Signals;
+using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Signals;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
 {
@@ -12,6 +13,9 @@ namespace GreatGames.CaseLib.Grid
     {
         public Vector3 Offset { get; private set; }
         public GameObject SlotPrefab { get; private set; }
+
+        private Queue<GameKey> _emptySlots = new Queue<GameKey>();
+
         private Dictionary<GameKey, GridData> _slots = new Dictionary<GameKey, GridData>();
         private Vector2Int _size;
 
@@ -31,6 +35,7 @@ namespace GreatGames.CaseLib.Grid
         public void InitializeGrid(Transform parent)
         {
             _slots.Clear();
+            _emptySlots.Clear(); 
 
             for (int y = 0; y < _size.y; y++)
             {
@@ -38,18 +43,39 @@ namespace GreatGames.CaseLib.Grid
                 {
                     GameKey key = new GameKey($"Slot_{x}_{y}");
                     Vector3 position = new Vector3(x + Offset.x, Offset.y, -y + Offset.z);
-                    _slots[key] = new GridData(key.Value, position); 
+                    _slots[key] = new GridData(key.Value, position);
+
+                    _emptySlots.Enqueue(key);
 
                     if (SlotPrefab != null)
                     {
                         GameObject slot = Object.Instantiate(SlotPrefab, position, Quaternion.identity, parent);
-                        slot.name = key.ValueAsString; 
+                        slot.name = key.ValueAsString;
                     }
                 }
             }
-
-            OnGridUpdated.Emit(); 
+            OnGridUpdated.Emit();
         }
+        public void SetSlotOccupied(GameKey key, bool occupied)
+        {
+            if (!_slots.ContainsKey(key)) return;
+
+            _slots[key].SetOccupied(occupied);
+
+            if (occupied)
+            {
+                if (_emptySlots.Contains(key))
+                    _emptySlots = new Queue<GameKey>(_emptySlots.Where(k => k != key));
+            }
+            else
+            {
+                if (!_emptySlots.Contains(key))
+                    _emptySlots.Enqueue(key);
+            }
+
+            OnGridUpdated.Emit();
+        }
+
 
         public bool IsSlotEmpty(GameKey key)
         {
@@ -58,18 +84,36 @@ namespace GreatGames.CaseLib.Grid
 
         public bool TryGetSlot(GameKey key, out GridData slot)
         {
-            return _slots.TryGetValue(key, out slot);
+            if (!_slots.TryGetValue(key, out slot))
+            {
+                Debug.LogWarning($"GridStructure: Slot key {key.ValueAsString} not found!");
+                return false;
+            }
+            return true;
         }
 
         public Vector3 GetWorldPosition(GameKey key)
         {
             if (!_slots.ContainsKey(key))
             {
-                Debug.LogWarning($"GridStructure: Slot key {key.ValueAsString} notFound!");
+                Debug.LogWarning($"GridStructure: Slot key {key.ValueAsString} not found!");
                 return Vector3.zero;
             }
 
             return _slots[key].Position;
+        }
+
+        public GameKey GetFirstEmptySlot()
+        {
+            while (_emptySlots.Count > 0)
+            {
+                GameKey key = _emptySlots.Peek();
+                if (_slots[key].IsOccupied == false)
+                    return key;
+                else
+                    _emptySlots.Dequeue();
+            }
+            return null;
         }
     }
 }

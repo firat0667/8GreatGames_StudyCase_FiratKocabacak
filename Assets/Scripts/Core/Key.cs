@@ -14,6 +14,8 @@ namespace GreatGames.CaseLib.Key
     // Basic ID generated from a string value.
     public class GameKey
     {
+        public static readonly GameKey Empty = new GameKey("EMPTY");
+
         public int Value => _value;
         protected int _value;
 
