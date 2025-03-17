@@ -2,7 +2,7 @@ using GreatGames.CaseLib.Slinky;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class SlinkySegmentClicker : MonoBehaviour, IPointerClickHandler
+public class SlinkySpringClicker : MonoBehaviour, IPointerClickHandler
 {
     private SlinkyController _parentSlinky;
 

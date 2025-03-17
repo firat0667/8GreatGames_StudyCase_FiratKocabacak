@@ -423,7 +423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50242bc3346f10b4e83b0c7cf8904816, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _slotPrefab: {fileID: 0}
+  _gridPrefab: {fileID: 0}
   _slinkyGridOffset: {x: 0, y: 0, z: 0}
   _mergeGridOffset: {x: 0, y: -1, z: 0}
 --- !u!1660057539 &9223372036854775807

@@ -16,7 +16,7 @@ namespace GreatGames.CaseLib.Grid
 
         private Queue<GameKey> _emptySlots = new Queue<GameKey>();
 
-        private Dictionary<GameKey, GridData> _slots = new Dictionary<GameKey, GridData>();
+        private Dictionary<GameKey, GridDataContainer> _slots = new Dictionary<GameKey, GridDataContainer>();
         private Vector2Int _size;
 
         public int SlotCount => _size.x * _size.y;
@@ -43,7 +43,7 @@ namespace GreatGames.CaseLib.Grid
                 {
                     GameKey key = new GameKey($"Slot_{x}_{y}");
                     Vector3 position = new Vector3(x + Offset.x, Offset.y, -y + Offset.z);
-                    _slots[key] = new GridData(key.Value, position);
+                    _slots[key] = new GridDataContainer(key.Value, position);
 
                     _emptySlots.Enqueue(key);
 
@@ -82,7 +82,7 @@ namespace GreatGames.CaseLib.Grid
             return _slots.ContainsKey(key) && _slots[key].IsOccupied == false;
         }
 
-        public bool TryGetSlot(GameKey key, out GridData slot)
+        public bool TryGetSlot(GameKey key, out GridDataContainer slot)
         {
             if (!_slots.TryGetValue(key, out slot))
             {

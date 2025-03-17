@@ -12,16 +12,19 @@ namespace GreatGames.CaseLib.Slinky
 {
     public class SlinkyController : MonoBehaviour, IInitializable
     {
+        [Header("Segment & Physics Settings")]
         [SerializeField] private GameObject _segmentPrefab;
         [SerializeField] private float _segmentSpacing = 0.5f;
-        [SerializeField] private float _travelTime = 0.5f;
-        [SerializeField] private float _delayBetweenSegments = 0.05f;
-        [SerializeField] private float _springFactor = 0.15f;
-        [SerializeField] private Ease _movementEase = Ease.InOutSine;
+        [SerializeField] private float _springStiffness = 15f;
+        [SerializeField] private float _springDamping = 0.8f;
 
-        private List<Transform> _segments;
+        [Header("Movement Settings")]
+        [SerializeField] private float _moveDuration = 0.5f;
+        [SerializeField] private Ease _movementEase = Ease.OutElastic; 
+
+        private List<Transform> _segments = new();
         private bool _isMoving = false;
-        private bool _isSelected = false; 
+        private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
         private GridManager _gridManager;
         private Color _slinkyColor;
@@ -33,11 +36,11 @@ namespace GreatGames.CaseLib.Slinky
             OnMovementComplete = new BasicSignal();
         }
 
-        public void Initialize(Vector3 startPos, Vector3 endPos, int segmentCount, SlinkyColor color, GridManager gridManager)
+        public void Initialize(Vector3 startPos, Vector3 endPos, SlinkyColor color, GridManager gridManager)
         {
             if (gridManager == null)
             {
-                Debug.LogError("GridManager notFound");
+                Debug.LogError("GridManager not found!");
                 return;
             }
 
@@ -45,25 +48,42 @@ namespace GreatGames.CaseLib.Slinky
             _slinkyColor = SlinkyColorUtility.GetColor(color);
 
             transform.position = startPos;
-            _segments = new List<Transform>();
+            _segments.Clear();
             _isSelected = false;
 
+            CreateSegments(startPos, endPos);
+        }
+
+        private void CreateSegments(Vector3 startPos, Vector3 endPos)
+        {
+            float distance = Vector3.Distance(startPos, endPos);
+            int segmentCount = Mathf.Max(3, Mathf.CeilToInt(distance / _segmentSpacing));
+
+            Transform prevSegment = null;
             for (int i = 0; i < segmentCount; i++)
             {
-                Vector3 segmentPosition = CalculateSegmentPosition(startPos, endPos, i, segmentCount);
+                Vector3 segmentPosition = Vector3.Lerp(startPos, endPos, (float)i / (segmentCount - 1));
                 GameObject segment = Instantiate(_segmentPrefab, segmentPosition, Quaternion.identity, transform);
                 segment.GetComponent<Renderer>().material.color = _slinkyColor;
                 _segments.Add(segment.transform);
-            }
-        }
 
-        private Vector3 CalculateSegmentPosition(Vector3 startPos, Vector3 endPos, int index, int totalSegments)
-        {
-            float t = (float)index / (totalSegments - 1);
-            Vector3 linearPosition = Vector3.Lerp(startPos, endPos, t);
-            float parabola = Mathf.Sin(t * Mathf.PI) * 0.5f;
-            Vector3 offset = new Vector3(0, parabola, 0);
-            return linearPosition + offset;
+                Rigidbody rb = segment.AddComponent<Rigidbody>();
+                rb.mass = 0.1f;
+                rb.drag = 0.2f;
+
+                if (prevSegment != null)
+                {
+                    SpringJoint joint = segment.AddComponent<SpringJoint>();
+                    joint.connectedBody = prevSegment.GetComponent<Rigidbody>();
+                    joint.spring = _springStiffness;
+                    joint.damper = _springDamping;
+                    joint.autoConfigureConnectedAnchor = false;
+                    joint.anchor = Vector3.zero;
+                    joint.connectedAnchor = Vector3.zero;
+                }
+
+                prevSegment = segment.transform;
+            }
         }
 
         public void OnSegmentClicked()
@@ -71,14 +91,15 @@ namespace GreatGames.CaseLib.Slinky
             if (!_isSelected && !_isMoving)
             {
                 GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(true);
-
-                if (emptySlotKey == null) 
+                if (emptySlotKey != null)
                 {
-                    Debug.LogWarning("No available slot found for placing Slinky!");
-                    return;
-                }
+                    _isSelected = _gridManager.TryPlaceSlinky(emptySlotKey, new SlinkyData(0, 0, SlinkyColor.Red), true);
 
-                _isSelected = _gridManager.TryPlaceSlinky(emptySlotKey, new SlinkyData(0, 0, "Red"), true);
+                }
+                else
+                {
+                    Debug.LogWarning("No available slot found!");
+                }
             }
         }
 
@@ -87,29 +108,16 @@ namespace GreatGames.CaseLib.Slinky
             if (_isMoving || _segments.Count == 0) return;
             _isMoving = true;
 
-            Vector3 startPos = _segments[0].position;
-            Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * (_springFactor * Vector3.Distance(startPos, targetPosition));
-
-            for (int i = 0; i < _segments.Count; i++)
+            foreach (Transform segment in _segments)
             {
-                int index = i;
-                float delay = i * _delayBetweenSegments;
-
-                Ease[] movementEases = { Ease.InOutSine, Ease.OutQuad, Ease.OutBounce };
-                Ease randomEase = movementEases[UnityEngine.Random.Range(0, movementEases.Length)];
-
-                _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, _travelTime, PathType.CatmullRom)
-                    .SetDelay(delay)
-                    .SetEase(randomEase);
-
+                segment.DOMove(targetPosition, _moveDuration).SetEase(_movementEase); 
             }
 
-            DOVirtual.DelayedCall(_travelTime + _delayBetweenSegments * _segments.Count, () =>
+            DOVirtual.DelayedCall(_moveDuration + 0.1f, () =>
             {
                 _isMoving = false;
                 OnMovementComplete.Emit();
             });
         }
-
     }
 }

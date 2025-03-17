@@ -11,7 +11,7 @@ namespace GreatGames.CaseLib.Grid
         [Header("Grid Configurations")]
         [SerializeField] private GridStructure _upperGrid;
         [SerializeField] private GridStructure _lowerGrid;
-        [SerializeField] private GameObject _slotPrefab;
+        [SerializeField] private GameObject _gridPrefab;
 
         [Header("Grid Offsets")] 
         [SerializeField] private Vector3 _slinkyGridOffset = new Vector3(0, 0, 0);
@@ -48,8 +48,8 @@ namespace GreatGames.CaseLib.Grid
                 _slinkyParent.SetParent(levelParent);
             }
 
-            _upperGrid ??= new GridStructure(upperSize, _slinkyGridOffset, _slotPrefab);
-            _lowerGrid ??= new GridStructure(lowerSize, _mergeGridOffset, _slotPrefab);
+            _upperGrid ??= new GridStructure(upperSize, _slinkyGridOffset, _gridPrefab);
+            _lowerGrid ??= new GridStructure(lowerSize, _mergeGridOffset, _gridPrefab);
 
             _upperGrid.InitializeGrid(_gridParent);
             _lowerGrid.InitializeGrid(_gridParent);
@@ -61,9 +61,7 @@ namespace GreatGames.CaseLib.Grid
         {
             GridStructure targetGrid = isUpperGrid ? _upperGrid : _lowerGrid;
 
-            if (!targetGrid.IsSlotEmpty(slotKey)) return false;
-
-            if (targetGrid.TryGetSlot(slotKey, out GridData slot))
+            if (targetGrid.TryGetSlot(slotKey, out GridDataContainer slot) && slot.IsOccupied == false)
             {
                 slot.SetOccupied(true);
                 targetGrid.SetSlotOccupied(slotKey, true); 
@@ -73,6 +71,7 @@ namespace GreatGames.CaseLib.Grid
 
             return false;
         }
+
 
 
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
