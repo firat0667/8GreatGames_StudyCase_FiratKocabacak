@@ -1,18 +1,25 @@
-using UnityEngine;
-using System.Collections.Generic;
 using GreatGames.CaseLib.DI;
-using GreatGames.CaseLib.Signals;
-using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Key;
-
-
+using GreatGames.CaseLib.Patterns;
+using GreatGames.CaseLib.Signals;
+using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
 {
     public class GridManager : MonoBehaviour, IFoundationSingleton, IInitializable
     {
+        [Header("Grid Configurations")]
+        [SerializeField] private GridStructure _upperGrid;
+        [SerializeField] private GridStructure _lowerGrid;
+        [SerializeField] private GameObject _slotPrefab;
 
-        private Dictionary<GameKey, GridData> _gridSlots = new Dictionary<GameKey, GridData>();
+        [Header("Grid Offsets")]
+        [SerializeField] private Vector3 _slinkyGridOffset = new Vector3(0, 0, 0);
+        [SerializeField] private Vector3 _mergeGridOffset = new Vector3(0, -1, 0);
+
+        private Transform _gridParent;
+        private Transform _slinkyParent;
+
         public BasicSignal OnGridUpdated { get; private set; }
         public bool Initialized { get; set; }
 
@@ -21,38 +28,53 @@ namespace GreatGames.CaseLib.Grid
             OnGridUpdated = new BasicSignal();
         }
 
-        public void InitializeGrid(int width, int height)
+        public void InitializeGrids(Vector2Int upperSize, Vector2Int lowerSize, Transform levelParent)
         {
-            _gridSlots.Clear();
-            for (int y = 0; y < height; y++)
+            if (_gridParent == null)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    GameKey key = new GameKey($"Slot: _{x}_{y}");
-                    Vector3 worldPos = new Vector3(x, 0, -y);
-                    _gridSlots[key] = new GridData(key.Value, worldPos);
-                }
+                _gridParent = new GameObject("Grid Parent").transform;
+                _gridParent.SetParent(levelParent);
             }
-            OnGridUpdated.Emit(); 
+
+            if (_slinkyParent == null)
+            {
+                _slinkyParent = new GameObject("Slinky Parent").transform;
+                _slinkyParent.SetParent(levelParent);
+            }
+
+            _upperGrid = new GridStructure(upperSize, _slinkyGridOffset, _slotPrefab);
+            _lowerGrid = new GridStructure(lowerSize, _mergeGridOffset, _slotPrefab);
+
+            _upperGrid.InitializeGrid(_gridParent);
+            _lowerGrid.InitializeGrid(_gridParent);
+
+            OnGridUpdated?.Emit(); 
         }
 
-        public bool TryPlaceSlinky(GameKey slotKey, SlinkyData slinky)
+        public bool TryPlaceSlinky(GameKey slotKey, SlinkyData slinky, bool isUpperGrid)
         {
-            if (!_gridSlots.ContainsKey(slotKey) || _gridSlots[slotKey].IsOccupied) return false;
+            GridStructure targetGrid = isUpperGrid ? _upperGrid : _lowerGrid;
 
-            _gridSlots[slotKey].SetOccupied(true);
-            OnGridUpdated.Emit(); 
-            return true;
+            if (!targetGrid.IsSlotEmpty(slotKey)) return false;
+
+            if (targetGrid.TryGetSlot(slotKey, out GridData slot))
+            {
+                slot.SetOccupied(true);
+                OnGridUpdated?.Emit();
+                return true;
+            }
+
+            return false;
         }
 
-        public bool IsSlotEmpty(GameKey key)
+        public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
         {
-            return _gridSlots.ContainsKey(key) && !_gridSlots[key].IsOccupied;
+            return isUpperGrid ? _upperGrid.IsSlotEmpty(key) : _lowerGrid.IsSlotEmpty(key);
         }
 
-        public Vector3 GetSlotPosition(GameKey key)
+        public Vector3 GetSlotPosition(GameKey key, bool isUpperGrid)
         {
-            return _gridSlots.ContainsKey(key) ? _gridSlots[key].Position : Vector3.zero;
+            return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
         }
     }
 }
