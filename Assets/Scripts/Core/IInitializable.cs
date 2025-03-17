@@ -1,14 +1,12 @@
-namespace GreatGames.CaseLib.DI
-{
-    /// <summary>
-    /// Can be initialized.
-    /// </summary>
+namespace GreatGames.CaseLib.DI // Dependecy Injection system
+{ 
+    // Can be initialized.
     public interface IInitializable
     {
-        /// <summary> Signifies if the class is ready to use. </summary>
+        // Signifies if the class is ready to use
         bool Initialized { get; set; }
 
-        /// <summary> Initialize to use. </summary>
+        // Initialize to use
         void Init()
         {
             Initialized = true;

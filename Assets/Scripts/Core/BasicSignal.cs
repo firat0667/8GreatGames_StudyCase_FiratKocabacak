@@ -1,6 +1,6 @@
 using System;
 
-namespace GreatGames.CaseLib.Key
+namespace GreatGames.CaseLib.Signals
 {
     public interface IBasicSignal
     {
@@ -89,10 +89,7 @@ namespace GreatGames.CaseLib.Key
             return;
         }
     }
-
-    /// <summary>
-    /// This signal can't be connected outside it's constructor.
-    /// </summary>
+    // This signal can't be connected outside it's constructor.
     public class EmitOnlySignal : BasicSignal
     {
         public EmitOnlySignal(Action action)

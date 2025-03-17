@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace GreatGames.CaseLib.Key
 {
-    /// <summary>
-    /// LongKey ensures no conflicts between keys.
-    /// </summary>
+    // LongKey ensures no conflicts between keys.
     public class LongKey : GameKey
     {
         public LongKey(string value) : base(value)
@@ -13,9 +11,7 @@ namespace GreatGames.CaseLib.Key
         }
     }
 
-    /// <summary>
-    /// Basic ID generated from a string value.
-    /// </summary>
+    // Basic ID generated from a string value.
     public class GameKey
     {
         public int Value => _value;

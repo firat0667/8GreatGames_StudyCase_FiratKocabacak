@@ -2,16 +2,13 @@ using UnityEngine;
 
 namespace GreatGames.CaseLib.Patterns
 {
-    /// <summary>
-    /// DI for FoundationSingletons.
-    /// </summary>
+
+    // DI for FoundationSingletons.
     public interface IFoundationSingleton : DI.IInitializable
     {
     }
 
-    /// <summary>
-    /// Singleton using the Foundation system.
-    /// </summary>
+    // Singleton using the Foundation system.
     public abstract class FoundationSingleton<T> : MonoBehaviour where T : MonoBehaviour, IFoundationSingleton
     {
         public static T Instance => _instance;
