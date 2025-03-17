@@ -13,7 +13,5 @@ MonoBehaviour:
   m_Name: LevelConfig
   m_EditorClassIdentifier: 
   UpperGridSize: {x: 5, y: 5}
-  LowerGridSize: {x: 6, y: 1}
+  LowerGridSize: {x: 5, y: 1}
   Slinkies: []
-  LevelName: 
-  LevelIndex: 0

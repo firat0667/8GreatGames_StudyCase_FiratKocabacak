@@ -26,7 +26,7 @@ namespace GreatGames.CaseLib.EditorTools
             EditorGUILayout.LabelField("Level Editor", EditorStyles.boldLabel);
             DrawColorSelection();
             DrawGrid(_levelConfig.UpperGridSize, true);
-            DrawGrid(_levelConfig.LowerGridSize, false);
+            DrawGrid(_levelConfig.LowerGridSize, false); 
 
             GUILayout.Space(10);
             DrawDefaultInspector();
@@ -41,7 +41,6 @@ namespace GreatGames.CaseLib.EditorTools
 
         private void DrawGrid(Vector2Int gridSize, bool isUpperGrid)
         {
-            GUILayout.Label(isUpperGrid ? "Upper Grid" : "Lower Grid", EditorStyles.boldLabel);
             GUILayout.BeginVertical();
 
             for (int y = 0; y < gridSize.y; y++)
@@ -56,7 +55,7 @@ namespace GreatGames.CaseLib.EditorTools
                     Color buttonColor = slinky != null ? SlinkyColorUtility.GetColor(slinky.Color) : Color.white;
 
                     GUI.backgroundColor = buttonColor;
-                    if (GUILayout.Button(slotLabel, GUILayout.Width(_buttonWidth), GUILayout.Height(_cellSize)))
+                    if (isUpperGrid && GUILayout.Button(slotLabel, GUILayout.Width(_buttonWidth), GUILayout.Height(_cellSize)))
                     {
                         HandleSlotClick(slotIndex, isUpperGrid);
                     }
@@ -69,9 +68,9 @@ namespace GreatGames.CaseLib.EditorTools
             GUILayout.Space(10);
         }
 
-        private void HandleSlotClick(int slotIndex, bool isUpperGrid) 
+        private void HandleSlotClick(int slotIndex, bool isUpperGrid)
         {
-            if (slotIndex >= _levelConfig.UpperGridSize.x * _levelConfig.UpperGridSize.y) return;
+            if (!isUpperGrid) return;
 
             if (_selectedStartSlot == -1)
             {
@@ -80,7 +79,7 @@ namespace GreatGames.CaseLib.EditorTools
             else if (_selectedEndSlot == -1)
             {
                 _selectedEndSlot = slotIndex;
-                AddSlinkyToLevel(_selectedStartSlot, _selectedEndSlot, isUpperGrid); 
+                AddSlinkyToLevel(_selectedStartSlot, _selectedEndSlot, isUpperGrid);
 
                 _selectedStartSlot = -1;
                 _selectedEndSlot = -1;
