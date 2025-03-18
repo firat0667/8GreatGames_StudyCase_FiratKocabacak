@@ -1,6 +1,7 @@
 using GreatGames.CaseLib.Grid;
 using System.Collections.Generic;
 using UnityEngine;
+
 [CreateAssetMenu(fileName = "LevelConfig", menuName = "Game/LevelConfig")]
 public class LevelConfigSO : ScriptableObject
 {
@@ -10,7 +11,24 @@ public class LevelConfigSO : ScriptableObject
 
     public List<SlinkyData> Slinkies = new();
 
-    
-    //TODO: you should change here
-    public Transform LevelInstance { get; set; }
+    private LevelController _levelController;
+
+    public LevelController LevelController => _levelController;
+
+    public void InitializeLevel()
+    {
+        Debug.Log("Initializing Level...");
+
+        GameObject levelGO = new GameObject("Level - " + name);
+        _levelController = levelGO.AddComponent<LevelController>();  
+    }
+
+    public void DestroyLevel()
+    {
+        if (_levelController != null)
+        {
+            Debug.Log("Destroying Level...");
+            Object.Destroy(_levelController.gameObject);
+        }
+    }
 }

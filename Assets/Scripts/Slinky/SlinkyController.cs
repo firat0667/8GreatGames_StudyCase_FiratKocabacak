@@ -5,7 +5,6 @@ using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
-using System;
 using GreatGames.CaseLib.Utility;
 
 namespace GreatGames.CaseLib.Slinky
@@ -64,7 +63,7 @@ namespace GreatGames.CaseLib.Slinky
             {
                 Vector3 segmentPosition = Vector3.Lerp(startPos, endPos, (float)i / (segmentCount - 1));
                 GameObject segment = Instantiate(_segmentPrefab, segmentPosition, Quaternion.identity, transform);
-                segment.GetComponent<Renderer>().material.color = _slinkyColor;
+                segment.GetComponentInChildren<Renderer>().material.color = _slinkyColor;
                 _segments.Add(segment.transform);
 
                 Rigidbody rb = segment.AddComponent<Rigidbody>();

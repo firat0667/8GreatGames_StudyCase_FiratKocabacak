@@ -14,7 +14,6 @@ namespace GreatGames.CaseLib.Key
     // Basic ID generated from a string value.
     public class GameKey
     {
-        public static readonly GameKey Empty = new GameKey("EMPTY");
 
         public int Value => _value;
         protected int _value;
@@ -27,7 +26,11 @@ namespace GreatGames.CaseLib.Key
             _valueAsString = value;
             _value = value.GetHashCode();
         }
-
+        public GameKey(int x, int y)
+        {
+            _valueAsString = $"{x},{y}";
+            _value = _valueAsString.GetHashCode();
+        }
         public override bool Equals(object obj)
         {
             return this == obj as GameKey;

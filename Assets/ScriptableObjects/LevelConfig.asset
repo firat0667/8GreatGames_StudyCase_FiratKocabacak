@@ -14,4 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UpperGridSize: {x: 5, y: 5}
   LowerGridSize: {x: 5, y: 1}
-  Slinkies: []
+  Slinkies:
+  - StartSlot: 2
+    EndSlot: 22
+    Color: 0
+  - StartSlot: 10
+    EndSlot: 14
+    Color: 0
+  - StartSlot: 6
+    EndSlot: 18
+    Color: 3
+  - StartSlot: 9
+    EndSlot: 16
+    Color: 4
+  - StartSlot: 0
+    EndSlot: 24
+    Color: 1

@@ -1,4 +1,4 @@
-using GreatGames.CaseLib.DI;
+﻿using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
@@ -32,30 +32,36 @@ namespace GreatGames.CaseLib.Grid
             OnGridUpdated = new BasicSignal();
         }
 
-        public void InitializeGrid(Transform parent)
+        public void InitializeGrid(Vector2Int size, Transform parent)
         {
+            _size = size;
             _slots.Clear();
-            _emptySlots.Clear(); 
 
-            for (int y = 0; y < _size.y; y++)
+            if (SlotPrefab == null)
             {
-                for (int x = 0; x < _size.x; x++)
+                Debug.LogError("ERROR: GridConfig -> slotPrefab is NULL!");
+                return;
+            }
+
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int x = 0; x < size.x; x++)
                 {
-                    GameKey key = new GameKey($"Slot_{x}_{y}");
+                    GameKey slotKey = new GameKey($"{x},{y}");
+
+                    // ✅ Doğru pozisyon hesapla!
                     Vector3 position = new Vector3(x + Offset.x, Offset.y, -y + Offset.z);
-                    _slots[key] = new GridDataContainer(key.Value, position);
+                    _slots[slotKey] = new GridDataContainer(x + y * _size.x, position);
 
-                    _emptySlots.Enqueue(key);
+                    GameObject slot = Object.Instantiate(SlotPrefab, position, Quaternion.identity, parent);
+                    slot.name = $"Slot_{x}_{y}";
 
-                    if (SlotPrefab != null)
-                    {
-                        GameObject slot = Object.Instantiate(SlotPrefab, position, Quaternion.identity, parent);
-                        slot.name = key.ValueAsString;
-                    }
+                    // 🔍 Log ekleyerek hangi slotların oluşturulduğunu kontrol et!
+                    Debug.Log($"[GRID INIT] Created Slot {slot.name} at {position} with Key: {slotKey.ValueAsString}");
                 }
             }
-            OnGridUpdated.Emit();
         }
+
         public void SetSlotOccupied(GameKey key, bool occupied)
         {
             if (!_slots.ContainsKey(key)) return;
@@ -86,7 +92,7 @@ namespace GreatGames.CaseLib.Grid
         {
             if (!_slots.TryGetValue(key, out slot))
             {
-                Debug.LogWarning($"GridStructure: Slot key {key.ValueAsString} not found!");
+                Debug.LogWarning($"Slot key {key.ValueAsString} not found!");
                 return false;
             }
             return true;
@@ -96,12 +102,16 @@ namespace GreatGames.CaseLib.Grid
         {
             if (!_slots.ContainsKey(key))
             {
-                Debug.LogWarning($"GridStructure: Slot key {key.ValueAsString} not found!");
+                Debug.LogError($"❌ [ERROR] GridStructure: Slot key {key.ValueAsString} bulunamadı!");
                 return Vector3.zero;
             }
 
+            Debug.Log($"✅ Slot key {key.ValueAsString} bulundu, Pozisyon: {_slots[key].Position}");
             return _slots[key].Position;
+
         }
+
+
 
         public GameKey GetFirstEmptySlot()
         {

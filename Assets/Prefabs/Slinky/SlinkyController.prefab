@@ -44,9 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d37d74c76bdf9aa4aa492e42cc8e4735, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _segmentPrefab: {fileID: 0}
+  _segmentPrefab: {fileID: 4987413748045918628, guid: 54044aa69e88932409a3da1f68c210ac, type: 3}
   _segmentSpacing: 0.5
-  _travelTime: 0.5
-  _delayBetweenSegments: 0.05
-  _springFactor: 0.15
+  _springStiffness: 15
+  _springDamping: 0.8
+  _moveDuration: 0.5
   _movementEase: 4

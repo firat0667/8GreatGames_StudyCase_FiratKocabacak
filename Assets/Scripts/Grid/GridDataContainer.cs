@@ -1,4 +1,5 @@
 using GreatGames.CaseLib.DI;
+using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using UnityEngine;
@@ -62,6 +63,8 @@ namespace GreatGames.CaseLib.Grid
             EndSlot = endSlot;
             Color = color;
         }
+        public GameKey GetStartKey() => new GameKey(StartSlot.ToString());
+        public GameKey GetEndKey() => new GameKey(StartSlot.ToString());
 
         public void CopyFrom(SlinkyData other)
         {
