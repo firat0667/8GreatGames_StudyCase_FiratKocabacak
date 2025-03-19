@@ -13,7 +13,7 @@ namespace GreatGames.CaseLib.Grid
     {
         [Header("Grid Configurations")]
         [SerializeField] private GameObject _gridPrefab;
-        [SerializeField] private SlinkyController _slinkyPrefab; 
+        [SerializeField] private SlinkyController _slinkyPrefab;
 
         [Header("Grid Offsets")]
         [SerializeField] private Vector3 _slinkyGridOffset = new Vector3(0, 0, 0);
@@ -41,74 +41,73 @@ namespace GreatGames.CaseLib.Grid
 
             if (_levelData == null)
             {
-                Debug.LogError("ERROR: _levelData is NULL!");
                 return;
             }
 
             if (_gridParent == null)
             {
-                _gridParent = new GameObject("Grid Parent").transform;
+                _gridParent = new GameObject("Grids Parent").transform;
                 _gridParent.SetParent(levelParent);
             }
 
             if (_slinkyParent == null)
             {
-                _slinkyParent = new GameObject("Slinky Parent").transform;
+                _slinkyParent = new GameObject("Slinkies Parent").transform;
                 _slinkyParent.SetParent(levelParent);
             }
 
             if (_upperGrid == null)
             {
-                _upperGrid = new GridStructure(_levelData.UpperGridSize, _slinkyGridOffset, _gridPrefab);
+                _upperGrid = new GridStructure(_levelData.UpperGridSize, _slinkyGridOffset, _gridPrefab, true);
             }
 
             if (_lowerGrid == null)
             {
-                _lowerGrid = new GridStructure(_levelData.LowerGridSize, _mergeGridOffset, _gridPrefab);
+                _lowerGrid = new GridStructure(_levelData.LowerGridSize, _mergeGridOffset, _gridPrefab, false);
             }
+
 
             _upperGrid.InitializeGrid(_levelData.UpperGridSize, _gridParent);
             _lowerGrid.InitializeGrid(_levelData.LowerGridSize, _gridParent);
 
-            Debug.Log("Grids initialized successfully!");
             OnGridUpdated?.Emit();
 
             SpawnSlinkies();
-        }
-        private bool IsValidSlot(int slotIndex, bool isUpperGrid)
-        {
-            int maxSlotCount = isUpperGrid ? _upperGrid.SlotCount : _lowerGrid.SlotCount;
-            return slotIndex >= 0 && slotIndex < maxSlotCount;
         }
         private void SpawnSlinkies()
         {
             if (_levelData == null || _slinkyPrefab == null)
             {
-                Debug.LogError("ERROR: LevelData or SlinkyPrefab is NULL!");
                 return;
             }
 
             foreach (var slinkyData in _levelData.Slinkies)
             {
-                if (!IsValidSlot(slinkyData.StartSlot, true) || !IsValidSlot(slinkyData.EndSlot, true))
-                {
-                    Debug.LogError($"Invalid slot positions for slinky: {slinkyData.StartSlot}, {slinkyData.EndSlot}");
-                    continue;
-                }
+                bool isStartUpperGrid = true;
+                bool isEndUpperGrid = true;
 
-                GameKey startKey = new GameKey(slinkyData.StartSlot.ToString());
-                GameKey endKey = new GameKey(slinkyData.EndSlot.ToString());
+                GridStructure startGrid = _upperGrid;
+                GridStructure endGrid = _upperGrid;
 
-                Vector3 startPos = _upperGrid.GetWorldPosition(startKey);
-                Vector3 endPos = _upperGrid.GetWorldPosition(endKey);
+                GameKey startKey = new GameKey($"U_{slinkyData.StartSlot % _levelData.UpperGridSize.x},{slinkyData.StartSlot / _levelData.UpperGridSize.x}");
+                GameKey endKey = new GameKey($"U_{slinkyData.EndSlot % _levelData.UpperGridSize.x},{slinkyData.EndSlot / _levelData.UpperGridSize.x}");
 
-                Debug.Log($"Spawning Slinky at -> Start: {startPos}, End: {endPos}");
+                Vector3 startPos = startGrid.GetWorldPosition(startKey);
+                Vector3 endPos = endGrid.GetWorldPosition(endKey);
+
+                GameObject startSlotObject = startGrid.GetSlotObject(startKey);
+                GameObject endSlotObject = endGrid.GetSlotObject(endKey);
+
+                GameObject slinkyContainer = new GameObject($"Slinky_{startKey.ValueAsString}");
+                slinkyContainer.transform.SetParent(_slinkyParent);
+                slinkyContainer.transform.position = startPos;
 
                 SlinkyController slinky = Instantiate(_slinkyPrefab, startPos, Quaternion.identity);
-                slinky.transform.SetParent(_slinkyParent);
-                slinky.Initialize(startPos, endPos, slinkyData.Color,this);
-                _upperGrid.SetSlotOccupied(startKey, true);
-                _upperGrid.SetSlotOccupied(endKey, true);
+                slinky.transform.SetParent(slinkyContainer.transform);
+                slinky.Initialize(startPos, endPos, this, slinkyData.Color, startSlotObject, endSlotObject, slinkyContainer.transform);
+
+                startGrid.SetSlotOccupied(startKey, true);
+                endGrid.SetSlotOccupied(endKey, true);
             }
         }
 
@@ -128,6 +127,8 @@ namespace GreatGames.CaseLib.Grid
             return false;
         }
 
+
+
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
         {
             return isUpperGrid ? _upperGrid.IsSlotEmpty(key) : _lowerGrid.IsSlotEmpty(key);
@@ -142,5 +143,16 @@ namespace GreatGames.CaseLib.Grid
         {
             return isUpperGrid ? _upperGrid.GetFirstEmptySlot() : _lowerGrid.GetFirstEmptySlot();
         }
-    }
+
+        public GridStructure GetUpperGrid()
+        {
+            return _upperGrid;
+        }
+
+        public GridStructure GetLowerGrid()
+        {
+            return _lowerGrid;
+        }
+      }
+
 }

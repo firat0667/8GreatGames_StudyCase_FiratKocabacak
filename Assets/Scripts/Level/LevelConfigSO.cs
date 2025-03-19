@@ -28,7 +28,7 @@ public class LevelConfigSO : ScriptableObject
         if (_levelController != null)
         {
             Debug.Log("Destroying Level...");
-            Object.Destroy(_levelController.gameObject);
+            Destroy(_levelController.gameObject);
         }
     }
 }

@@ -10,10 +10,19 @@ namespace GreatGames.CaseLib.Utility
             { SlinkyColor.Red, Color.red },
             { SlinkyColor.Blue, Color.blue },
             { SlinkyColor.Green, Color.green },
-            { SlinkyColor.Yellow, new Color(1f, 0.92f, 0.016f) },
+            { SlinkyColor.Pink, new Color(1f, 0.41f, 0.71f) },
             { SlinkyColor.Orange, new Color(1f, 0.5f, 0f) }
-
         };
+
+        private static readonly Dictionary<Color, SlinkyColor> _reverseColorMap = new();
+
+        static SlinkyColorUtility()
+        {
+            foreach (var pair in _colorMap)
+            {
+                _reverseColorMap[pair.Value] = pair.Key;
+            }
+        }
 
         public static bool TryGetColor(SlinkyColor color, out Color result)
         {
@@ -24,6 +33,16 @@ namespace GreatGames.CaseLib.Utility
         {
             return _colorMap.ContainsKey(color) ? _colorMap[color] : Color.white;
         }
+
+        public static bool TryGetSlinkyColorEnum(Color color, out SlinkyColor slinkyColor)
+        {
+            return _reverseColorMap.TryGetValue(color, out slinkyColor);
+        }
+
+        public static SlinkyColor GetSlinkyColorEnum(Color color)
+        {
+            return _reverseColorMap.TryGetValue(color, out var slinkyColor) ? slinkyColor : SlinkyColor.Red;
+        }
     }
 
     public enum SlinkyColor
@@ -31,7 +50,7 @@ namespace GreatGames.CaseLib.Utility
         Red,
         Blue,
         Green,
-        Yellow,
-        Orange 
+        Pink,
+        Orange
     }
 }

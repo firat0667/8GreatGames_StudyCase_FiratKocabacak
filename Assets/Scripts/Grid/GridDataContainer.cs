@@ -63,8 +63,6 @@ namespace GreatGames.CaseLib.Grid
             EndSlot = endSlot;
             Color = color;
         }
-        public GameKey GetStartKey() => new GameKey(StartSlot.ToString());
-        public GameKey GetEndKey() => new GameKey(StartSlot.ToString());
 
         public void CopyFrom(SlinkyData other)
         {
@@ -72,7 +70,6 @@ namespace GreatGames.CaseLib.Grid
                 return;
 
         }
-
         public object Value
         {
             get => this;

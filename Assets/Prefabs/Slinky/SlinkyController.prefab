@@ -45,8 +45,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _segmentPrefab: {fileID: 4987413748045918628, guid: 54044aa69e88932409a3da1f68c210ac, type: 3}
-  _segmentSpacing: 0.5
-  _springStiffness: 15
-  _springDamping: 0.8
-  _moveDuration: 0.5
-  _movementEase: 4
+  segmentsPerUnit: 4
+  heightMultiplierFactor: 0.3
+  horizontalTightness: 0.8
+  springForce: 1000
+  dampingFactor: 555
+  _moveDuration: 0.2
+  _movementEase: 7
+  delayBetweenSegments: 0.01
+  arcHeight: 1.5
+  moveTimeMultiplier: 1.5

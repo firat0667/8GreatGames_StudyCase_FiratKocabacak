@@ -1,6 +1,5 @@
-using GreatGames.CaseLib.Grid;
+﻿using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Utility;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,7 +25,7 @@ namespace GreatGames.CaseLib.EditorTools
             EditorGUILayout.LabelField("Level Editor", EditorStyles.boldLabel);
             DrawColorSelection();
             DrawGrid(_levelConfig.UpperGridSize, true);
-            DrawGrid(_levelConfig.LowerGridSize, false); 
+            DrawGrid(_levelConfig.LowerGridSize, false);
 
             GUILayout.Space(10);
             DrawDefaultInspector();
@@ -49,7 +48,7 @@ namespace GreatGames.CaseLib.EditorTools
                 for (int x = 0; x < gridSize.x; x++)
                 {
                     int slotIndex = GetSlotIndex(x, y, gridSize);
-                    string slotLabel = $"{slotIndex}";
+                    string slotLabel = $"{x},{y}";  
 
                     SlinkyData slinky = _levelConfig.Slinkies.Find(s => s.StartSlot == slotIndex || s.EndSlot == slotIndex);
                     Color buttonColor = slinky != null ? SlinkyColorUtility.GetColor(slinky.Color) : Color.white;
