@@ -47,6 +47,7 @@ namespace GreatGames.CaseLib.Grid
                 {
                     int correctedX = !_isUpperGrid ? (size.x - 1 - x) : x;
 
+
                     GameKey slotKey = new GameKey($"{prefix}{correctedX},{y}");
                     Vector3 position = new Vector3(correctedX + Offset.x, Offset.y, -y + Offset.z);
 
@@ -146,5 +147,10 @@ namespace GreatGames.CaseLib.Grid
             }
             return null;
         }
+        public Dictionary<GameKey, GridDataContainer> GetAllSlots()
+        {
+            return _slots;
+        }
+
     }
 }

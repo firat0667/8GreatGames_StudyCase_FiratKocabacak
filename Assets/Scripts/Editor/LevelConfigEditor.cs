@@ -26,7 +26,14 @@ namespace GreatGames.CaseLib.EditorTools
             DrawColorSelection();
             DrawGrid(_levelConfig.UpperGridSize, true);
             DrawGrid(_levelConfig.LowerGridSize, false);
+            EditorGUILayout.LabelField("Slinky List", EditorStyles.boldLabel);
+            foreach (var slinky in _levelConfig.Slinkies)
+            {
+                string startSlotStr = GetSlotIndexString(slinky.StartSlot, _levelConfig.UpperGridSize);
+                string endSlotStr = GetSlotIndexString(slinky.EndSlot, _levelConfig.UpperGridSize);
 
+                EditorGUILayout.LabelField($"Start: {startSlotStr} → End: {endSlotStr} | Color: {slinky.Color}");
+            }
             GUILayout.Space(10);
             DrawDefaultInspector();
         }
@@ -78,6 +85,12 @@ namespace GreatGames.CaseLib.EditorTools
             else if (_selectedEndSlot == -1)
             {
                 _selectedEndSlot = slotIndex;
+
+                string startSlotStr = GetSlotIndexString(_selectedStartSlot, _levelConfig.UpperGridSize);
+                string endSlotStr = GetSlotIndexString(_selectedEndSlot, _levelConfig.UpperGridSize);
+
+                Debug.Log($"Selected Start Slot: {startSlotStr}, End Slot: {endSlotStr}"); 
+
                 AddSlinkyToLevel(_selectedStartSlot, _selectedEndSlot, isUpperGrid);
 
                 _selectedStartSlot = -1;
@@ -89,10 +102,23 @@ namespace GreatGames.CaseLib.EditorTools
         {
             Undo.RegisterCompleteObjectUndo(_levelConfig, "Add Slinky");
 
+            string startSlotStr = GetSlotIndexString(startSlot, _levelConfig.UpperGridSize);
+            string endSlotStr = GetSlotIndexString(endSlot, _levelConfig.UpperGridSize);
+
+            Debug.Log($"Adding Slinky from {startSlotStr} to {endSlotStr}");
+
             _levelConfig.Slinkies.Add(new SlinkyData(startSlot, endSlot, _selectedColor));
 
             EditorUtility.SetDirty(_levelConfig);
         }
+        private string GetSlotIndexString(int slotIndex, Vector2Int gridSize)
+        {
+            int x = slotIndex % gridSize.x; 
+            int y = slotIndex / gridSize.x; 
+
+            return $"{x},{y}";
+        }
+
 
         private int GetSlotIndex(int x, int y, Vector2Int gridSize)
         {

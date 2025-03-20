@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using DG.Tweening;
-using GreatGames.CaseLib.Grid;
-using GreatGames.CaseLib.Signals;
+﻿using DG.Tweening;
 using GreatGames.CaseLib.DI;
+using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace GreatGames.CaseLib.Slinky
 {
@@ -27,7 +28,10 @@ namespace GreatGames.CaseLib.Slinky
         [SerializeField] private float moveTimeMultiplier = 1.5f; 
 
         private Transform _slinkyParent;
+
+        public List<Transform> Segments => _segments;
         private List<Transform> _segments = new();
+
         private bool _isMoving = false;
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
@@ -38,6 +42,16 @@ namespace GreatGames.CaseLib.Slinky
 
         private GameObject _startSlotObject;
         private GameObject _endSlotObject;
+
+        public Vector3 StartPosition => _startPosition;
+        private Vector3 _startPosition;
+
+        public Vector3 EndPosition => _endPosition;
+        private Vector3 _endPosition;
+
+        public bool IsMoving { get; private set; } = false;
+        public int SegmentCount => _segments.Count;
+        public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
 
         public void Init()
         {
@@ -57,7 +71,14 @@ namespace GreatGames.CaseLib.Slinky
             transform.SetParent(_slinkyParent);
             transform.position = startPos;
 
+            _startPosition = startPos;
+            _endPosition = endPos;
+
+            OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(startPos));
+            OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(endPos));
+
             CreateSegments(startPos, endPos, transform);
+            _gridManager.RegisterSlinky(this);
         }
 
         private void CreateSegments(Vector3 startPos, Vector3 endPos, Transform parent)
@@ -113,31 +134,70 @@ namespace GreatGames.CaseLib.Slinky
             lastHinge.connectedBody = _endSlotObject.GetComponent<Rigidbody>();
         }
 
-
         public void OnSegmentClicked()
         {
-            if (!_isSelected && !_isMoving)
+            if (_isSelected || _isMoving)
             {
-                GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
+                Debug.Log($"[IGNORED] {this.name} already Selected.");
+                return;
+            }
 
-                if (emptySlotKey != null)
+            GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
+
+            if (emptySlotKey == null)
+            {
+                Debug.LogWarning("[ERROR] No available slot in Lower Grid!");
+                return;
+            }
+
+            Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
+
+            if (_gridManager.IsThereLongerSlinkyBlocking(this))
+            {
+                return;
+            }
+
+            _isSelected = true;
+            MoveToTarget(targetPosition, emptySlotKey);
+        }
+        void OnDrawGizmos()
+        {
+            if (!Application.isPlaying) return;
+
+            foreach (var segment in _segments) 
+            {
+                Vector3 startPos = segment.position;
+                Vector3 direction = Vector3.up; 
+                float distance = 2f; 
+
+                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
+                bool hasValidHit = false;
+
+                foreach (var hit in hits)
                 {
-                    _isSelected = true;
-                    Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
-                    MoveToTarget(targetPosition, emptySlotKey);
+                    if (_segments.Contains(hit.collider.transform)) continue;
+
+                    hasValidHit = true; 
+                    Gizmos.color = Color.red; 
+                    Gizmos.DrawSphere(hit.point, 0.2f);
+                    break; 
                 }
-                else
+
+                if (!hasValidHit)
                 {
-                    Debug.LogWarning("No available slot in Lower Grid!");
+                    Gizmos.color = Color.green; 
                 }
+
+                Gizmos.DrawLine(startPos, startPos + direction * distance);
             }
         }
 
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
-            if (_isMoving) return;
-            _isMoving = true;
 
+            if (_isMoving) return;
+
+            _isMoving = true;
 
             if (newSlotKey == null)
             {
@@ -149,8 +209,10 @@ namespace GreatGames.CaseLib.Slinky
                 }
                 newSlotKey = emptySlotKey;
                 targetPosition = _gridManager.GetSlotPosition(newSlotKey, false);
+              
             }
-
+            _gridManager.TryPlaceSlinky(newSlotKey, null, false);
+            _gridManager.RemoveSlinky(this);
             foreach (Transform segment in _segments)
             {
                 HingeJoint hinge = segment.GetComponent<HingeJoint>();
@@ -189,7 +251,6 @@ namespace GreatGames.CaseLib.Slinky
             DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
             {
                 _isMoving = false;
-                _gridManager.TryPlaceSlinky(newSlotKey, null, false);
                 OnMovementComplete?.Emit();
             });
         }

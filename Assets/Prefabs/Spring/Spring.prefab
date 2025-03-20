@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7907873935501435942}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Subsytem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4268429187824781728}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: '[Mesh]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,8 +73,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 570545209032502295}
-  - component: {fileID: 8113593091755972065}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SpringClicker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,18 +95,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7907873935501435942}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8113593091755972065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4319355327612056691}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 687aaff18dbc8c24385359b3e44becff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &4987413748045918628
 GameObject:
   m_ObjectHideFlags: 0
@@ -118,7 +105,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3025403715422281696}
   - component: {fileID: 3202731889988982676}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Spring
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -174,7 +161,7 @@ GameObject:
   - component: {fileID: 1530280552472528000}
   - component: {fileID: 4708290016783381688}
   - component: {fileID: 7897323479768125611}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}

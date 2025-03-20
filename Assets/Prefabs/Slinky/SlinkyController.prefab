@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1549186853777014126}
   - component: {fileID: 1756384896646039965}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SlinkyController
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -5,6 +5,7 @@ using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
@@ -29,6 +30,8 @@ namespace GreatGames.CaseLib.Grid
         public bool Initialized { get; set; }
 
         private LevelConfigSO _levelData;
+
+        private List<SlinkyController> _slinkies = new List<SlinkyController>();
 
         private void OnEnable()
         {
@@ -83,9 +86,6 @@ namespace GreatGames.CaseLib.Grid
 
             foreach (var slinkyData in _levelData.Slinkies)
             {
-                bool isStartUpperGrid = true;
-                bool isEndUpperGrid = true;
-
                 GridStructure startGrid = _upperGrid;
                 GridStructure endGrid = _upperGrid;
 
@@ -127,8 +127,14 @@ namespace GreatGames.CaseLib.Grid
             return false;
         }
 
-
-
+        public void RegisterSlinky(SlinkyController slinky)
+        {
+            _slinkies.Add(slinky);
+        }
+        public void RemoveSlinky(SlinkyController slinky)
+        {
+            _slinkies.Remove(slinky);
+        }
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
         {
             return isUpperGrid ? _upperGrid.IsSlotEmpty(key) : _lowerGrid.IsSlotEmpty(key);
@@ -144,15 +150,58 @@ namespace GreatGames.CaseLib.Grid
             return isUpperGrid ? _upperGrid.GetFirstEmptySlot() : _lowerGrid.GetFirstEmptySlot();
         }
 
-        public GridStructure GetUpperGrid()
+ 
+        public bool IsThereLongerSlinkyBlocking(SlinkyController slinky)
         {
-            return _upperGrid;
+            foreach (var segment in slinky.Segments)
+            {
+                Vector3 startPos = segment.position;
+                Vector3 direction = Vector3.up;
+                float distance = 2f;
+
+                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
+                foreach (var hit in hits)
+                {
+                    SlinkyController collidingSlinky = hit.collider.GetComponentInParent<SlinkyController>();
+
+                    if (collidingSlinky == null || collidingSlinky == slinky) continue; 
+
+                    return true; 
+                }
+            }
+            return false;
         }
 
-        public GridStructure GetLowerGrid()
+        public GameKey GetGridKeyFromPosition(Vector3 position)
         {
-            return _lowerGrid;
+            foreach (var kvp in _upperGrid.GetAllSlots())
+            {
+                if (Vector3.Distance(kvp.Value.Position, position) < 0.1f)
+                {
+                    return kvp.Key;
+                }
+            }
+
+            foreach (var kvp in _lowerGrid.GetAllSlots())
+            {
+                if (Vector3.Distance(kvp.Value.Position, position) < 0.1f)
+                {
+                    return kvp.Key;  
+                }
+            }
+
+            return null;
         }
-      }
+        private bool IsPointBetween(Vector3 point, Vector3 start, Vector3 end)
+        {
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minZ = Mathf.Min(start.z, end.z);
+            float maxZ = Mathf.Max(start.z, end.z);
+
+            return (point.x >= minX && point.x <= maxX) && (point.z >= minZ && point.z <= maxZ);
+        }
+
+    }
 
 }

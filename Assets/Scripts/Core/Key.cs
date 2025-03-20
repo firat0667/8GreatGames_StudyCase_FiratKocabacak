@@ -2,7 +2,6 @@ using UnityEngine;
 
 namespace GreatGames.CaseLib.Key
 {
-    // LongKey ensures no conflicts between keys.
     public class LongKey : GameKey
     {
         public LongKey(string value) : base(value)
@@ -11,13 +10,10 @@ namespace GreatGames.CaseLib.Key
         }
     }
 
-    // Basic ID generated from a string value.
     public class GameKey
     {
-
         public int Value => _value;
         protected int _value;
-
         public string ValueAsString => _valueAsString;
         protected string _valueAsString;
 
@@ -26,33 +22,33 @@ namespace GreatGames.CaseLib.Key
             _valueAsString = value;
             _value = value.GetHashCode();
         }
+
         public GameKey(int x, int y)
         {
             _valueAsString = $"{x},{y}";
             _value = _valueAsString.GetHashCode();
         }
+
         public override bool Equals(object obj)
         {
-            return this == obj as GameKey;
+            if (obj is GameKey otherKey)
+            {
+                return _valueAsString == otherKey._valueAsString;
+            }
+            return false;
         }
 
         public override int GetHashCode()
         {
-            return Value;
+            return _valueAsString.GetHashCode();
         }
 
         public static bool operator ==(GameKey first, GameKey second)
         {
-            if (ReferenceEquals(first, second))
-            {
-                return true;
-            }
-            else if (ReferenceEquals(first, null) || ReferenceEquals(second, null))
-            {
-                return false;
-            }
+            if (ReferenceEquals(first, second)) return true;
+            if (ReferenceEquals(first, null) || ReferenceEquals(second, null)) return false;
 
-            return first.Value == second.Value;
+            return first._valueAsString == second._valueAsString;
         }
 
         public static bool operator !=(GameKey first, GameKey second)
