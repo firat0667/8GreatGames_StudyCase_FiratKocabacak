@@ -15,24 +15,21 @@ MonoBehaviour:
   UpperGridSize: {x: 5, y: 5}
   LowerGridSize: {x: 5, y: 1}
   Slinkies:
-  - StartSlot: 7
-    EndSlot: 19
-    Color: 0
-  - StartSlot: 4
-    EndSlot: 21
-    Color: 3
-  - StartSlot: 5
-    EndSlot: 23
-    Color: 2
-  - StartSlot: 1
-    EndSlot: 22
-    Color: 1
-  - StartSlot: 14
-    EndSlot: 11
-    Color: 4
   - StartSlot: 24
-    EndSlot: 10
+    EndSlot: 18
     Color: 0
   - StartSlot: 3
-    EndSlot: 20
+    EndSlot: 5
+    Color: 0
+  - StartSlot: 21
+    EndSlot: 10
+    Color: 0
+  - StartSlot: 15
+    EndSlot: 19
+    Color: 2
+  - StartSlot: 23
+    EndSlot: 0
+    Color: 2
+  - StartSlot: 20
+    EndSlot: 4
     Color: 2

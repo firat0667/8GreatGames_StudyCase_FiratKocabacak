@@ -1,4 +1,4 @@
-using GreatGames.CaseLib.DI;
+﻿using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
@@ -8,60 +8,88 @@ using UnityEngine;
 
 public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingleton
 {
-    private List<SlinkyController> _slinkies = new List<SlinkyController>();
+    private Queue<SlinkyController> _matchQueue = new Queue<SlinkyController>();
+    private bool _isMatching = false;
+    private SlinkyController _targetSlinky;
 
     public bool Initialized { get; set; }
 
-
-    public void RegisterSlinky(SlinkyController slinky)
+    public bool CheckForMatch()
     {
-        _slinkies.Add(slinky);
-    }
+        if (_isMatching) return true;
 
-    public void CheckForMatch()
-    {
         List<SlinkyController> matchedSlinkies = FindMatch();
-
-        if (matchedSlinkies.Count >= 3)
+        if (matchedSlinkies.Count == 3)
         {
-            foreach (var slinky in matchedSlinkies)
-            {
-                slinky.gameObject.SetActive(false);
-                _slinkies.Remove(slinky);
-            }
+            _isMatching = true;
+            _targetSlinky = matchedSlinkies[1];
 
-            ShiftRemainingSlinkies();
+            AnimateMatch(matchedSlinkies);
+            return true;
         }
+        return false;
     }
 
     private List<SlinkyController> FindMatch()
     {
-        List<SlinkyController> matched = new List<SlinkyController>();
+        List<SlinkyController> slinkies = GridManager.Instance.GetAllSlinkiesInLowerGrid();
 
-        for (int i = 0; i < _slinkies.Count - 2; i++)
+        for (int i = 0; i <= slinkies.Count - 3; i++)
         {
-            if (_slinkies[i].SlinkyColor == _slinkies[i + 1].SlinkyColor && _slinkies[i].SlinkyColor == _slinkies[i + 2].SlinkyColor)
+            if (slinkies[i].SlinkyColor == slinkies[i + 1].SlinkyColor &&
+                slinkies[i].SlinkyColor == slinkies[i + 2].SlinkyColor)
             {
-                matched.Add(_slinkies[i]);
-                matched.Add(_slinkies[i + 1]);
-                matched.Add(_slinkies[i + 2]);
+                return new List<SlinkyController> { slinkies[i], slinkies[i + 1], slinkies[i + 2] };
             }
         }
-
-        return matched;
+        return new List<SlinkyController>();
     }
 
-    private void ShiftRemainingSlinkies()
+    private void AnimateMatch(List<SlinkyController> matchedSlinkies)
     {
-        foreach (var slinky in _slinkies)
-        {
-            GameKey newSlotKey = GridManager.Instance.GetFirstEmptySlot(false);
-            if (newSlotKey != null)
-            {
-                Vector3 targetPosition = GridManager.Instance.GetSlotPosition(newSlotKey, false);
-                slinky.MoveToTarget(targetPosition, newSlotKey);
-            }
-        }
+        _matchQueue.Clear();
+        _matchQueue.Enqueue(matchedSlinkies[0]);
+        _matchQueue.Enqueue(matchedSlinkies[2]);
+
+        ProcessNextMatch();
     }
 
+    private void ProcessNextMatch()
+    {
+        if (_matchQueue.Count == 0)
+        {
+            _targetSlinky.gameObject.SetActive(false);
+            GridManager.Instance.RemoveSlinky(_targetSlinky);
+
+            ShiftSlinkiesAfterMatch();
+            _isMatching = false;
+            return;
+        }
+
+        SlinkyController slinky = _matchQueue.Dequeue();
+        Vector3 targetPos = GridManager.Instance.GetSlotPosition(_targetSlinky.OccupiedGridKeys[0], false);
+
+        slinky.MoveToTarget(targetPos, _targetSlinky.OccupiedGridKeys[0]);
+
+        slinky.OnMovementComplete.Connect(() =>
+        {
+            GridManager.Instance.RemoveSlinky(slinky);
+            slinky.gameObject.SetActive(false);
+
+            if (_matchQueue.Count == 0)
+            {
+                ShiftSlinkiesAfterMatch();
+            }
+            else
+            {
+                ProcessNextMatch();
+            }
+        });
+    }
+
+    private void ShiftSlinkiesAfterMatch()
+    {
+        Debug.Log("[MATCH] ShiftSlinkiesAfterMatch çağrıldı!");
+        GridManager.Instance.ShiftRemainingSlinkies();
+    }
 }

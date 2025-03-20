@@ -1,6 +1,8 @@
-﻿using GreatGames.CaseLib.DI;
+﻿using DG.Tweening;
+using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
+using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -95,25 +97,6 @@ namespace GreatGames.CaseLib.Grid
             return true;
         }
 
-        public GameKey GetClosestSlotKey(Vector3 worldPosition)
-        {
-            float minDistance = float.MaxValue;
-            GameKey closestKey = null;
-
-            foreach (var key in _slots.Keys)
-            {
-                Vector3 slotPosition = GetWorldPosition(key);
-                float distance = Vector3.Distance(worldPosition, slotPosition);
-
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    closestKey = key;
-                }
-            }
-
-            return closestKey;
-        }
 
         public GameObject GetSlotObject(GameKey key)
         {
@@ -151,6 +134,20 @@ namespace GreatGames.CaseLib.Grid
         {
             return _slots;
         }
+        public void RemoveSlinky(GameKey key)
+        {
+            if (_slots.ContainsKey(key))
+            {
+                _slots[key].SetOccupied(false);
+            }
+        }
 
+        public void PlaceSlinky(SlinkyController slinky, GameKey key)
+        {
+            if (_slots.ContainsKey(key))
+            {
+                _slots[key].SetOccupied(true);
+            }
+        }
     }
 }

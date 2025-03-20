@@ -48,7 +48,7 @@ namespace GreatGames.CaseLib.Slinky
 
         public Vector3 EndPosition => _endPosition;
         private Vector3 _endPosition;
-
+        public GameKey SlotIndex { get; set; }
         public bool IsMoving { get; private set; } = false;
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
@@ -160,6 +160,7 @@ namespace GreatGames.CaseLib.Slinky
             _isSelected = true;
             MoveToTarget(targetPosition, emptySlotKey);
         }
+
         void OnDrawGizmos()
         {
             if (!Application.isPlaying) return;
@@ -252,6 +253,8 @@ namespace GreatGames.CaseLib.Slinky
             {
                 _isMoving = false;
                 OnMovementComplete?.Emit();
+
+                MatchManager.Instance.CheckForMatch();
             });
         }
 

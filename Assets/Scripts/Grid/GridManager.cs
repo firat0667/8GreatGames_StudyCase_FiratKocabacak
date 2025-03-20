@@ -116,16 +116,24 @@ namespace GreatGames.CaseLib.Grid
         {
             GridStructure targetGrid = isUpperGrid ? _upperGrid : _lowerGrid;
 
-            if (targetGrid.TryGetSlot(slotKey, out GridDataContainer slot) && slot.IsOccupied == false)
+            Debug.Log($"[DEBUG] TryPlaceSlinky Çağrıldı: Slot {slotKey.ValueAsString}, IsUpperGrid: {isUpperGrid}");
+
+            if (targetGrid.TryGetSlot(slotKey, out GridDataContainer slot) && !slot.IsOccupied)
             {
                 slot.SetOccupied(true);
                 targetGrid.SetSlotOccupied(slotKey, true);
+                Debug.Log($"[DEBUG] Slinky {slinky} Slot {slotKey.ValueAsString}'e yerleştirildi!");
+
                 OnGridUpdated?.Emit();
+                MatchManager.Instance.CheckForMatch();
                 return true;
             }
 
+            Debug.Log($"[ERROR] Slot {slotKey.ValueAsString} dolu veya geçersiz!");
             return false;
         }
+
+
 
         public void RegisterSlinky(SlinkyController slinky)
         {
@@ -150,7 +158,7 @@ namespace GreatGames.CaseLib.Grid
             return isUpperGrid ? _upperGrid.GetFirstEmptySlot() : _lowerGrid.GetFirstEmptySlot();
         }
 
- 
+
         public bool IsThereLongerSlinkyBlocking(SlinkyController slinky)
         {
             foreach (var segment in slinky.Segments)
@@ -164,12 +172,36 @@ namespace GreatGames.CaseLib.Grid
                 {
                     SlinkyController collidingSlinky = hit.collider.GetComponentInParent<SlinkyController>();
 
-                    if (collidingSlinky == null || collidingSlinky == slinky) continue; 
-
-                    return true; 
+                    if (collidingSlinky == null || collidingSlinky == slinky) continue;
+                    return true;
                 }
             }
             return false;
+        }
+        public void ShiftRemainingSlinkies()
+        {
+            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid(); 
+            List<SlinkyController> upperSlinkies = GetAllSlinkiesInUpperGrid(); 
+
+            int slotIndex = 0;
+
+            foreach (var slinky in upperSlinkies)
+            {
+                if (slotIndex >= emptySlots.Count) break; 
+
+                GameKey targetSlot = emptySlots[slotIndex];
+                Vector3 targetPosition = GetSlotPosition(targetSlot, false);
+
+                _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]); 
+                _lowerGrid.PlaceSlinky(slinky, targetSlot); 
+
+                slinky.OccupiedGridKeys.Clear();
+                slinky.OccupiedGridKeys.Add(targetSlot);
+
+                slinky.MoveToTarget(targetPosition, targetSlot); 
+
+                slotIndex++;
+            }
         }
 
         public GameKey GetGridKeyFromPosition(Vector3 position)
@@ -192,16 +224,38 @@ namespace GreatGames.CaseLib.Grid
 
             return null;
         }
-        private bool IsPointBetween(Vector3 point, Vector3 start, Vector3 end)
+
+        public List<GameKey> GetEmptySlotsInLowerGrid()
         {
-            float minX = Mathf.Min(start.x, end.x);
-            float maxX = Mathf.Max(start.x, end.x);
-            float minZ = Mathf.Min(start.z, end.z);
-            float maxZ = Mathf.Max(start.z, end.z);
-
-            return (point.x >= minX && point.x <= maxX) && (point.z >= minZ && point.z <= maxZ);
+            return _lowerGrid.GetAllSlots().Where(kvp => !kvp.Value.IsOccupied).Select(kvp => kvp.Key).ToList();
         }
+        public List<SlinkyController> GetAllSlinkiesInUpperGrid()
+        {
+            return _upperGrid.GetAllSlots().Values
+                .Where(slot => slot.IsOccupied)
+                .Select(slot => slot.Value as SlinkyController)
+                .Where(slinky => slinky != null)
+                .ToList();
+        }
+        public List<SlinkyController> GetAllSlinkiesInLowerGrid()
+        {
+            var allSlots = _lowerGrid.GetAllSlots();
+            Debug.Log($"[DEBUG] Lower Grid Slot Sayısı: {allSlots.Count}");
 
+            foreach (var kvp in allSlots)
+            {
+                Debug.Log($"[DEBUG] Slot: {kvp.Key}, Dolu mu? {kvp.Value.IsOccupied}");
+            }
+
+            List<SlinkyController> result = allSlots.Values
+                .Where(slot => slot.IsOccupied)
+                .Select(slot => slot.Value as SlinkyController)
+                .Where(slinky => slinky != null)
+                .ToList();
+
+            Debug.Log($"[DEBUG] Lower Grid'deki Slinky Sayısı: {result.Count}");
+            return result;
+        }
     }
 
 }
