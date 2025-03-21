@@ -54,4 +54,4 @@ MonoBehaviour:
   _movementEase: 7
   delayBetweenSegments: 0.01
   arcHeight: 1.5
-  moveTimeMultiplier: 1.5
+  moveTimeMultiplier: 2

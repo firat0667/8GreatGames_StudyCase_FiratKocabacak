@@ -72,7 +72,7 @@ namespace GreatGames.CaseLib.Grid
 
             if (occupied)
             {
-                _emptySlots = new Queue<GameKey>(_emptySlots.Where(k => k != key));
+
             }
             else if (!_emptySlots.Contains(key))
             {
@@ -80,6 +80,7 @@ namespace GreatGames.CaseLib.Grid
             }
 
             OnGridUpdated.Emit();
+      
         }
 
         public bool IsSlotEmpty(GameKey key)

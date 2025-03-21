@@ -24,12 +24,12 @@ MonoBehaviour:
   - StartSlot: 21
     EndSlot: 10
     Color: 0
-  - StartSlot: 15
+  - StartSlot: 1
+    EndSlot: 22
+    Color: 2
+  - StartSlot: 14
+    EndSlot: 15
+    Color: 2
+  - StartSlot: 0
     EndSlot: 19
-    Color: 2
-  - StartSlot: 23
-    EndSlot: 0
-    Color: 2
-  - StartSlot: 20
-    EndSlot: 4
     Color: 2

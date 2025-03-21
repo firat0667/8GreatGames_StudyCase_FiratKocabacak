@@ -73,10 +73,9 @@ namespace GreatGames.CaseLib.Slinky
 
             _startPosition = startPos;
             _endPosition = endPos;
-
+            OccupiedGridKeys.Clear();
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(startPos));
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(endPos));
-
             CreateSegments(startPos, endPos, transform);
             _gridManager.RegisterSlinky(this);
         }
@@ -138,7 +137,6 @@ namespace GreatGames.CaseLib.Slinky
         {
             if (_isSelected || _isMoving)
             {
-                Debug.Log($"[IGNORED] {this.name} already Selected.");
                 return;
             }
 
@@ -146,7 +144,6 @@ namespace GreatGames.CaseLib.Slinky
 
             if (emptySlotKey == null)
             {
-                Debug.LogWarning("[ERROR] No available slot in Lower Grid!");
                 return;
             }
 
@@ -160,7 +157,6 @@ namespace GreatGames.CaseLib.Slinky
             _isSelected = true;
             MoveToTarget(targetPosition, emptySlotKey);
         }
-
         void OnDrawGizmos()
         {
             if (!Application.isPlaying) return;
@@ -195,7 +191,6 @@ namespace GreatGames.CaseLib.Slinky
 
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
-
             if (_isMoving) return;
 
             _isMoving = true;
@@ -212,8 +207,8 @@ namespace GreatGames.CaseLib.Slinky
                 targetPosition = _gridManager.GetSlotPosition(newSlotKey, false);
               
             }
-            _gridManager.TryPlaceSlinky(newSlotKey, null, false);
-            _gridManager.RemoveSlinky(this);
+            _gridManager.TryPlaceSlinky(newSlotKey, this, false);
+
             foreach (Transform segment in _segments)
             {
                 HingeJoint hinge = segment.GetComponent<HingeJoint>();

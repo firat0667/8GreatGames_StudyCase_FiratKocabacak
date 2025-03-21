@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace GreatGames.CaseLib.Key
 {
@@ -31,16 +31,16 @@ namespace GreatGames.CaseLib.Key
 
         public override bool Equals(object obj)
         {
-            if (obj is GameKey otherKey)
+            if (obj is GameKey other)
             {
-                return _valueAsString == otherKey._valueAsString;
+                return ValueAsString == other.ValueAsString;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return _valueAsString.GetHashCode();
+            return ValueAsString.GetHashCode();
         }
 
         public static bool operator ==(GameKey first, GameKey second)
@@ -55,5 +55,23 @@ namespace GreatGames.CaseLib.Key
         {
             return !(first == second);
         }
+        public Vector2Int ToVector2Int()
+        {
+            if (string.IsNullOrEmpty(ValueAsString)) return Vector2Int.zero;
+
+            string[] parts = ValueAsString.Split('_');
+            if (parts.Length > 1)
+            {
+                string[] coords = parts[1].Split(',');
+                if (coords.Length == 2 && int.TryParse(coords[0], out int x) && int.TryParse(coords[1], out int y))
+                {
+                    return new Vector2Int(x, y);
+                }
+            }
+
+            Debug.LogError($"[ERROR] GameKey.ToVector2Int() başarısız: {ValueAsString}");
+            return Vector2Int.zero;
+        }
+
     }
 }
