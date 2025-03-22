@@ -26,6 +26,7 @@ namespace GreatGames.CaseLib.Grid
         public BasicSignal OnGridUpdated { get; private set; }
         public object Value { get => this; set { } }
 
+
         public GridStructure(Vector2Int size, Vector3 offset, GameObject slotPrefab, bool isUpperGrid)
         {
             _size = size;
@@ -131,15 +132,17 @@ namespace GreatGames.CaseLib.Grid
             }
             return null;
         }
+
         public Dictionary<GameKey, GridDataContainer> GetAllSlots()
         {
             return _slots;
         }
+
         public void RemoveSlinky(GameKey key)
         {
-            if (_slots.ContainsKey(key))
+            if (_slots.TryGetValue(key, out GridDataContainer slot))
             {
-                _slots[key].SetOccupied(false);
+                slot.Clear(); 
             }
         }
 

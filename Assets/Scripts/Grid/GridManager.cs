@@ -143,6 +143,18 @@ namespace GreatGames.CaseLib.Grid
         }
         public void RemoveSlinky(SlinkyController slinky)
         {
+          
+            if (slinky.OccupiedGridKeys.Count > 0)
+            {
+                foreach (var key in slinky.OccupiedGridKeys)
+                {
+                    if (_lowerGrid.TryGetSlot(key, out var slot))
+                    {
+                        slot.Clear(); 
+                    }
+                }
+            }
+            slinky.SlotIndex = null;
             _slinkies.Remove(slinky);
         }
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
@@ -253,16 +265,21 @@ namespace GreatGames.CaseLib.Grid
 
         public List<GameKey> GetEmptySlotsInLowerGrid()
         {
-            return _lowerGrid.GetAllSlots().Where(kvp => !kvp.Value.IsOccupied).Select(kvp => kvp.Key).ToList();
+            return _lowerGrid
+                .GetAllSlots()
+                .Where(kvp => !kvp.Value.IsOccupied)
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
+                .Select(kvp => kvp.Key)
+                .ToList();
         }
         public List<SlinkyController> GetAllSlinkiesInLowerGrid()
         {
-            return _lowerGrid.GetAllSlots().Values
-                .Where(slot => slot.IsOccupied)
-                .Select(slot => slot.Value as SlinkyController)
-                .Where(slinky => slinky != null)
-                .ToList();
+            return _slinkies.Where(slinky =>
+                slinky.OccupiedGridKeys.Count > 0 &&
+                slinky.OccupiedGridKeys.All(key => key.ValueAsString.StartsWith("L_"))
+            ).ToList();
         }
+
     }
 
 }

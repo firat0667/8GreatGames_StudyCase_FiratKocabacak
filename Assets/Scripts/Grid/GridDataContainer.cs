@@ -1,6 +1,7 @@
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
+using GreatGames.CaseLib.Slinky;
 using GreatGames.CaseLib.Utility;
 using UnityEngine;
 
@@ -27,6 +28,11 @@ namespace GreatGames.CaseLib.Grid
 
             IsOccupied = status;
             OnSlotStateChanged?.Emit(); 
+        }
+        public void Clear()
+        {
+            IsOccupied = false;
+            OnSlotStateChanged?.Emit();
         }
 
         public void CopyFrom(GridDataContainer other)

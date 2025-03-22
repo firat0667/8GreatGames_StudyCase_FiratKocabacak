@@ -52,6 +52,10 @@ namespace GreatGames.CaseLib.Slinky
         public bool IsMoving { get; private set; } = false;
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
+        private void Awake()
+        {
+            Init();
+        }
 
         public void Init()
         {
@@ -132,7 +136,18 @@ namespace GreatGames.CaseLib.Slinky
             HingeJoint lastHinge = _segments[_segments.Count - 1].gameObject.AddComponent<HingeJoint>();
             lastHinge.connectedBody = _endSlotObject.GetComponent<Rigidbody>();
         }
+        public void DestroySegments()
+        {
+            foreach (var segment in Segments)
+            {
+                if (segment != null)
+                {
+                    Destroy(segment.gameObject); 
+                }
+            }
 
+            Segments.Clear();
+        }
         public void OnSegmentClicked()
         {
             if (_isSelected || _isMoving)
@@ -208,7 +223,9 @@ namespace GreatGames.CaseLib.Slinky
               
             }
             _gridManager.TryPlaceSlinky(newSlotKey, this, false);
-
+            SlotIndex = newSlotKey;
+            OccupiedGridKeys.Clear();
+            OccupiedGridKeys.Add(newSlotKey);
             foreach (Transform segment in _segments)
             {
                 HingeJoint hinge = segment.GetComponent<HingeJoint>();
@@ -248,7 +265,6 @@ namespace GreatGames.CaseLib.Slinky
             {
                 _isMoving = false;
                 OnMovementComplete?.Emit();
-
                 MatchManager.Instance.CheckForMatch();
             });
         }
