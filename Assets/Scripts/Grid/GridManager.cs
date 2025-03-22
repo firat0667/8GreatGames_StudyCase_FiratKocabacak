@@ -6,7 +6,6 @@ using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid

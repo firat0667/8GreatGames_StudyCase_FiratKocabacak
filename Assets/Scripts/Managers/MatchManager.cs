@@ -1,15 +1,11 @@
-﻿using DG.Tweening;
-using GreatGames.CaseLib.DI;
-using GreatGames.CaseLib.Grid;
+﻿using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Slinky;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.VFX;
 
 public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingleton
 {
@@ -46,7 +42,6 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
         }
     }
-
     private Dictionary<int, List<SlinkyController>> GroupSlinkiesByRow(List<SlinkyController> slinkies)
     {
         Dictionary<int, List<SlinkyController>> grouped = new();
@@ -99,7 +94,7 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
         right.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => rightDone);
-
+        VFXManager.Instance.PlayMergeParticle(middle.gameObject.transform);
         _gridManager.RemoveSlinkyAt(leftSlot);
         _gridManager.RemoveSlinkyAt(middleSlot);
         _gridManager.RemoveSlinkyAt(rightSlot);
@@ -122,5 +117,4 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
         CheckForMatch();
     }
-
-}
+ }
