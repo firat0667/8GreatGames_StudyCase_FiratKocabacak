@@ -25,7 +25,7 @@ namespace GreatGames.CaseLib.Grid
         public int SlotCount => _size.x * _size.y;
         public BasicSignal OnGridUpdated { get; private set; }
         public object Value { get => this; set { } }
-
+        public GridType Type => _isUpperGrid ? GridType.Upper : GridType.Lower;
 
         public GridStructure(Vector2Int size, Vector3 offset, GameObject slotPrefab, bool isUpperGrid)
         {
@@ -50,7 +50,6 @@ namespace GreatGames.CaseLib.Grid
                 {
                     int correctedX = !_isUpperGrid ? (size.x - 1 - x) : x;
 
-
                     GameKey slotKey = new GameKey($"{prefix}{correctedX},{y}");
                     Vector3 position = new Vector3(correctedX + Offset.x, Offset.y, -y + Offset.z);
 
@@ -65,40 +64,46 @@ namespace GreatGames.CaseLib.Grid
             }
         }
 
-        public void SetSlotOccupied(GameKey key, bool occupied)
+        public void SetSlotOccupied(GameKey key, SlinkyController slinky)
         {
             if (!_slots.ContainsKey(key)) return;
 
-            _slots[key].SetOccupied(occupied);
+            _slots[key].SetOccupied(true);
+            _slots[key].SetSlinky(slinky);
 
-            if (occupied)
-            {
+            OnGridUpdated.Emit();
+        }
 
-            }
-            else if (!_emptySlots.Contains(key))
+        public void ClearSlot(GameKey key)
+        {
+            if (!_slots.ContainsKey(key)) return;
+
+            _slots[key].SetOccupied(false);
+            _slots[key].RemoveSlinky();
+
+            if (!_emptySlots.Contains(key))
             {
                 _emptySlots.Enqueue(key);
             }
 
             OnGridUpdated.Emit();
-      
         }
+
 
         public bool IsSlotEmpty(GameKey key)
         {
             return _slots.ContainsKey(key) && !_slots[key].IsOccupied;
         }
 
-        public bool TryGetSlot(GameKey key, out GridDataContainer slot)
+        public bool TryGetContainer(GameKey key, out GridDataContainer container)
         {
-            if (!_slots.TryGetValue(key, out slot))
+            if (!_slots.TryGetValue(key, out container))
             {
                 Debug.LogWarning($"Slot key {key.ValueAsString} not found!");
                 return false;
             }
             return true;
         }
-
 
         public GameObject GetSlotObject(GameKey key)
         {
@@ -142,7 +147,7 @@ namespace GreatGames.CaseLib.Grid
         {
             if (_slots.TryGetValue(key, out GridDataContainer slot))
             {
-                slot.Clear(); 
+                slot.RemoveSlinky();
             }
         }
 
@@ -150,7 +155,7 @@ namespace GreatGames.CaseLib.Grid
         {
             if (_slots.ContainsKey(key))
             {
-                _slots[key].SetOccupied(true);
+                _slots[key].SetSlinky(slinky); 
             }
         }
     }

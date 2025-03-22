@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using GreatGames.CaseLib.Grid;
+using UnityEngine;
 
 namespace GreatGames.CaseLib.Key
 {
@@ -16,7 +17,6 @@ namespace GreatGames.CaseLib.Key
         protected int _value;
         public string ValueAsString => _valueAsString;
         protected string _valueAsString;
-
         public GameKey(string value)
         {
             _valueAsString = value;
@@ -72,6 +72,11 @@ namespace GreatGames.CaseLib.Key
             Debug.LogError($"[ERROR] GameKey.ToVector2Int() başarısız: {ValueAsString}");
             return Vector2Int.zero;
         }
-
     }
+    public static class GameKeyExtensions
+    {
+        public static bool IsLower(this GameKey key) => key.ValueAsString.StartsWith("L_");
+        public static bool IsUpper(this GameKey key) => key.ValueAsString.StartsWith("U_");
+    }
+
 }

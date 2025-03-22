@@ -6,6 +6,7 @@ using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
@@ -69,7 +70,6 @@ namespace GreatGames.CaseLib.Grid
                 _lowerGrid = new GridStructure(_levelData.LowerGridSize, _mergeGridOffset, _gridPrefab, false);
             }
 
-
             _upperGrid.InitializeGrid(_levelData.UpperGridSize, _gridParent);
             _lowerGrid.InitializeGrid(_levelData.LowerGridSize, _gridParent);
 
@@ -77,6 +77,7 @@ namespace GreatGames.CaseLib.Grid
 
             SpawnSlinkies();
         }
+
         private void SpawnSlinkies()
         {
             if (_levelData == null || _slinkyPrefab == null)
@@ -106,18 +107,20 @@ namespace GreatGames.CaseLib.Grid
                 slinky.transform.SetParent(slinkyContainer.transform);
                 slinky.Initialize(startPos, endPos, this, slinkyData.Color, startSlotObject, endSlotObject, slinkyContainer.transform);
                 Debug.Log("Slinkies" + slinkyData.Color);
-                startGrid.SetSlotOccupied(startKey, true);
-                endGrid.SetSlotOccupied(endKey, true);
+                startGrid.SetSlotOccupied(startKey, slinky);
+                endGrid.SetSlotOccupied(endKey, slinky);
             }
         }
+
         public bool TryPlaceSlinky(GameKey slotKey, SlinkyController movingSlinky, bool isUpperGrid)
         {
             GridStructure targetGrid = isUpperGrid ? _upperGrid : _lowerGrid;
 
-            if (targetGrid.TryGetSlot(slotKey, out GridDataContainer slot) && !slot.IsOccupied)
+            if (targetGrid.TryGetContainer(slotKey, out GridDataContainer slot) && !slot.IsOccupied)
             {
-                slot.SetOccupied(true);
-                targetGrid.SetSlotOccupied(slotKey, true);
+                Debug.Log($"🧪 TryPlaceSlinky → {slotKey.ValueAsString} | IsOccupied = {slot.IsOccupied}");
+
+                targetGrid.SetSlotOccupied(slotKey, movingSlinky);
 
                 if (movingSlinky != null)
                 {
@@ -143,20 +146,65 @@ namespace GreatGames.CaseLib.Grid
         }
         public void RemoveSlinky(SlinkyController slinky)
         {
-          
+            if (slinky == null)
+            {
+                Debug.LogWarning("⚠️ RemoveSlinky: slinky is null!");
+                return;
+            }
+
             if (slinky.OccupiedGridKeys.Count > 0)
             {
                 foreach (var key in slinky.OccupiedGridKeys)
                 {
-                    if (_lowerGrid.TryGetSlot(key, out var slot))
+                    Debug.Log($"🧹 RemoveSlinky > Slot temizleniyor: {key.ValueAsString}");
+                    if (_lowerGrid.TryGetContainer(key, out var slot))
                     {
-                        slot.Clear(); 
+                        slot.RemoveSlinky(); // bu SetSlinky(null) + IsOccupied false + signal
                     }
                 }
             }
+
             slinky.SlotIndex = null;
             _slinkies.Remove(slinky);
         }
+
+        public void RemoveSlinkyAt(GameKey key)
+        {
+            GridDataContainer container = null;
+
+            if (key.IsLower())
+                _lowerGrid.TryGetContainer(key, out container);
+            else
+                _upperGrid.TryGetContainer(key, out container);
+
+            if (container != null && container.HasSlinky)
+            {
+                var slinky = container.Slinky; // ÖNCE al
+                Debug.Log($"🧹 Slot temizleniyor: {key.ValueAsString}");
+                container.Slinky.OccupiedGridKeys.Clear();
+                if (key.IsLower())
+                    _lowerGrid.ClearSlot(key);
+                else
+                    _upperGrid.ClearSlot(key);
+
+                // ⛔ Bu kontrol Clear'dan önce yapılmalı
+                if (slinky != null)
+                {
+                    RemoveSlinky(slinky); // Tüm referansları kaldır
+                }
+            }
+        }
+        public void LogLowerGridSlotStates()
+        {
+            Debug.Log("📊 Lower Grid Slot Durumları:");
+
+            foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
+            {
+                string status = kvp.Value.IsOccupied ? "🟥 Dolu" : "⬜ Boş";
+                Debug.Log($"  ↪ {kvp.Key.ValueAsString} : {status}");
+            }
+        }
+
         public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
         {
             return isUpperGrid ? _upperGrid.IsSlotEmpty(key) : _lowerGrid.IsSlotEmpty(key);
@@ -166,10 +214,15 @@ namespace GreatGames.CaseLib.Grid
         {
             return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
         }
-
         public GameKey GetFirstEmptySlot(bool isUpperGrid)
         {
-            return isUpperGrid ? _upperGrid.GetFirstEmptySlot() : _lowerGrid.GetFirstEmptySlot();
+            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
+
+            return grid.GetAllSlots()
+                .Where(kvp => !kvp.Value.IsOccupied)
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x)
+                .Select(kvp => kvp.Key)
+                .FirstOrDefault();
         }
 
 
@@ -195,7 +248,9 @@ namespace GreatGames.CaseLib.Grid
         }
         public void ShiftRemainingSlinkies()
         {
-            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid(); 
+            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid();
+            foreach (var slot in emptySlots)
+                Debug.Log($"🧩 EmptySlot: {slot.ValueAsString}");
             List<SlinkyController> lowergrids = GetAllSlinkiesInLowerGrid();
 
             int slotIndex = 0;
@@ -212,7 +267,7 @@ namespace GreatGames.CaseLib.Grid
 
                 slinky.OccupiedGridKeys.Clear();
                 slinky.OccupiedGridKeys.Add(targetSlot);
-
+                Debug.Log($"🎯 {slinky.name} → TargetSlot: {targetSlot.ValueAsString}");
                 slinky.MoveToTarget(targetPosition, targetSlot); 
 
                 slotIndex++;
@@ -276,7 +331,7 @@ namespace GreatGames.CaseLib.Grid
         {
             return _slinkies.Where(slinky =>
                 slinky.OccupiedGridKeys.Count > 0 &&
-                slinky.OccupiedGridKeys.All(key => key.ValueAsString.StartsWith("L_"))
+                slinky.OccupiedGridKeys.All(key => key.IsLower())
             ).ToList();
         }
 

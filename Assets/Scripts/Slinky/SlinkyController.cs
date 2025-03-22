@@ -207,7 +207,6 @@ namespace GreatGames.CaseLib.Slinky
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
             if (_isMoving) return;
-
             _isMoving = true;
 
             if (newSlotKey == null)
@@ -266,6 +265,7 @@ namespace GreatGames.CaseLib.Slinky
                 _isMoving = false;
                 OnMovementComplete?.Emit();
                 MatchManager.Instance.CheckForMatch();
+                GridManager.Instance.LogLowerGridSlotStates();
             });
         }
 

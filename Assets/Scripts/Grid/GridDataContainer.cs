@@ -14,6 +14,10 @@ namespace GreatGames.CaseLib.Grid
         public bool IsOccupied { get; private set; }
         public BasicSignal OnSlotStateChanged { get; private set; }
 
+        public SlinkyController Slinky { get; private set; }
+
+        public bool HasSlinky => Slinky != null;
+
         public GridDataContainer(int index, Vector3 position)
         {
             Index = index;
@@ -31,6 +35,7 @@ namespace GreatGames.CaseLib.Grid
         }
         public void Clear()
         {
+            Slinky = null;
             IsOccupied = false;
             OnSlotStateChanged?.Emit();
         }
@@ -44,7 +49,19 @@ namespace GreatGames.CaseLib.Grid
             Position = other.Position;
             IsOccupied = other.IsOccupied;
         }
+        public void SetSlinky(SlinkyController slinky)
+        {
+            Slinky = slinky;
+            IsOccupied = slinky != null;
+            OnSlotStateChanged?.Emit();
+        }
 
+        public void RemoveSlinky()
+        {
+            Slinky = null;
+            IsOccupied = false;
+            OnSlotStateChanged?.Emit();
+        }
         public object Value
         {
             get => this;
@@ -85,5 +102,10 @@ namespace GreatGames.CaseLib.Grid
                     CopyFrom(data);
             }
         }
+    }
+    public enum GridType
+    {
+        Upper,
+        Lower
     }
 }

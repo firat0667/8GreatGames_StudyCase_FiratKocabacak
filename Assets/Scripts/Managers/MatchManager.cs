@@ -104,25 +104,30 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         left.OnMovementComplete.Connect(() => leftDone = true);
         right.OnMovementComplete.Connect(() => rightDone = true);
 
-        // Sol slinky orta noktaya gelsin
+        GameKey leftSlot = left.SlotIndex;
+        GameKey middleSlot = middle.SlotIndex;
+        GameKey rightSlot = right.SlotIndex;
+
+        // Sırasıyla hedefe taşı
         left.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => leftDone);
 
-        // Sağ slinky orta noktaya gelsin
         right.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => rightDone);
 
-        // 🎬 Segmentleri yok et
+        // Segmentleri yok et
         left.DestroySegments();
         middle.DestroySegments();
         right.DestroySegments();
 
         yield return new WaitForSeconds(0.3f);
 
-       
-        _gridManager.RemoveSlinky(middle);
-        _gridManager.RemoveSlinky(right);
+        // Grid'den slinky'leri kaldır (eski slotlarına göre)
+        _gridManager.RemoveSlinkyAt(leftSlot);
+        _gridManager.RemoveSlinkyAt(middleSlot);
+        _gridManager.RemoveSlinkyAt(rightSlot);
 
+        // ✅ GameObject'leri destroy et
         if (left != null) Destroy(left.gameObject);
         if (middle != null) Destroy(middle.gameObject);
         if (right != null) Destroy(right.gameObject);
