@@ -7,6 +7,7 @@ using GreatGames.CaseLib.Slinky;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -21,27 +22,14 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
     }
     public void CheckForMatch()
     {
-        Debug.Log("✅ MatchManager.CheckForMatch() çağrıldı.");
         if (_isMatching) return;
 
         List<SlinkyController> slinkies = _gridManager.GetAllSlinkiesInLowerGrid();
-        Debug.Log($"Alt griddeki slinky sayısı: {slinkies.Count}");
-        foreach (var s in slinkies)
-        {
-            string colorText = s?.SlinkyColor.ToString() ?? "null";
-            Debug.Log($"Slinky: Color = {colorText}, Slot = {s.SlotIndex?.ValueAsString ?? "null"}");
-        }
         var groupedByRow = GroupSlinkiesByRow(slinkies);
 
         foreach (var row in groupedByRow)
         {
             var ordered = row.Value.OrderBy(s => s.SlotIndex.ToVector2Int().x).ToList();
-
-            Debug.Log($"🧪 Row {row.Key} içinde {ordered.Count} slinky var:");
-            foreach (var s in ordered)
-            {
-                Debug.Log($"🧪  → {s.SlotIndex.ValueAsString} [{s.SlinkyColor}]");
-            }
 
             for (int i = 0; i <= ordered.Count - 3; i++)
             {
@@ -49,11 +37,8 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
                 var b = ordered[i + 1];
                 var c = ordered[i + 2];
 
-                Debug.Log($"🧪 Kontrol: {a.SlotIndex.ValueAsString}, {b.SlotIndex.ValueAsString}, {c.SlotIndex.ValueAsString}");
-
                 if (IsSameColor(a, b, c))
                 {
-                    Debug.Log("🎯 Eşleşme bulundu!");
                     StartCoroutine(HandleMatch(a, b, c));
                     return;
                 }
@@ -85,9 +70,8 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
     private IEnumerator HandleMatch(SlinkyController left, SlinkyController middle, SlinkyController right)
     {
-        if (left == null || middle == null || right == null)
+        if (left == null || middle == null || right == null || left.IsMoving  || middle.IsMoving || right.IsMoving)
         {
-            Debug.LogWarning("❌ HandleMatch içinde null slinky referansı!");
             yield break;
         }
 
@@ -99,7 +83,7 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         left.IsMatch = true;
         right.IsMatch = true;
         middle.IsMatch = true;
-        // Eventleri önce temizle, sonra bağla
+
         left.OnMovementComplete.DisconnectAll();
         right.OnMovementComplete.DisconnectAll();
 
@@ -110,7 +94,6 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         GameKey middleSlot = middle.SlotIndex;
         GameKey rightSlot = right.SlotIndex;
 
-        // Sırasıyla hedefe taşı
         left.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => leftDone);
 
@@ -121,19 +104,17 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         _gridManager.RemoveSlinkyAt(middleSlot);
         _gridManager.RemoveSlinkyAt(rightSlot);
 
-        // 🔧 Ardından segmentleri yok et
         left.DestroySegments();
         middle.DestroySegments();
         right.DestroySegments();
 
         yield return new WaitForSeconds(0.1f);
 
-        // ⛔ GameObject'leri en son destroy et
         if (left != null) Destroy(left.gameObject);
         if (middle != null) Destroy(middle.gameObject);
         if (right != null) Destroy(right.gameObject);
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
         _gridManager.ShiftRemainingSlinkies();
         yield return new WaitForSeconds(0.2f);
 

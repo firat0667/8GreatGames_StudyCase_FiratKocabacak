@@ -32,9 +32,9 @@ namespace GreatGames.CaseLib.Slinky
 
         public List<Transform> Segments => _segments;
         private List<Transform> _segments = new();
-
+        public bool IsMoving=>_isMoving;
         private bool _isMoving = false;
-        public bool IsMatch;
+        public bool IsMatch { get;  set; }
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
         private GridManager _gridManager;
@@ -51,7 +51,6 @@ namespace GreatGames.CaseLib.Slinky
         public Vector3 EndPosition => _endPosition;
         private Vector3 _endPosition;
         public GameKey SlotIndex { get; set; }
-        public bool IsMoving { get; private set; } = false;
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
         private void Awake()
@@ -174,47 +173,13 @@ namespace GreatGames.CaseLib.Slinky
             _isSelected = true;
             MoveToTarget(targetPosition, emptySlotKey);
         }
-        void OnDrawGizmos()
-        {
-            if (!Application.isPlaying) return;
-
-            foreach (var segment in _segments) 
-            {
-                Vector3 startPos = segment.position;
-                Vector3 direction = Vector3.up; 
-                float distance = 2f; 
-
-                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
-                bool hasValidHit = false;
-
-                foreach (var hit in hits)
-                {
-                    if (_segments.Contains(hit.collider.transform)) continue;
-
-                    hasValidHit = true; 
-                    Gizmos.color = Color.red; 
-                    Gizmos.DrawSphere(hit.point, 0.2f);
-                    break; 
-                }
-
-                if (!hasValidHit)
-                {
-                    Gizmos.color = Color.green; 
-                }
-
-                Gizmos.DrawLine(startPos, startPos + direction * distance);
-            }
-        }
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
-            // Prevent new movement if already moving
             if (_isMoving) return;
 
 
-            // Define the movement time
             float moveTime = _moveDuration * moveTimeMultiplier;
 
-            // Move each segment with a delay between them
             for (int i = 0; i < _segments.Count; i++)
             {
                 int index = i;
@@ -223,30 +188,25 @@ namespace GreatGames.CaseLib.Slinky
                 Vector3 startPos = _segments[index].position;
                 Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * arcHeight;
 
-                // Create a movement animation for each segment using DOPath
                 Tween moveTween = _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, moveTime, PathType.CatmullRom)
                     .SetDelay(delay)
                     .SetEase(_movementEase)
                     .SetRelative(false);
             }
-
-            // After all segments have finished their movement, finalize the process
             DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
             {
                 _isMoving = false;
-                OnMovementComplete?.Emit(); // Emit the movement completion signal
-                MatchManager.Instance.CheckForMatch(); // Check for any matches after the movement
-               // Log the grid state
+                OnMovementComplete?.Emit();
                 _gridManager.ShiftRemainingSlinkies();
+                MatchManager.Instance.CheckForMatch(); 
+                
             });
 
             if (IsMatch) return;
             _isMoving = true;
 
-            // Check if no new slot key is provided
             if (newSlotKey == null)
             {
-                // Try to find the first empty slot if no key is given
                 GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
                 if (emptySlotKey == null)
                 {
@@ -257,13 +217,11 @@ namespace GreatGames.CaseLib.Slinky
                 targetPosition = _gridManager.GetSlotPosition(newSlotKey, false);
             }
 
-            // Place the slinky in the new slot
             _gridManager.TryPlaceSlinky(newSlotKey, this, false);
             SlotIndex = newSlotKey;
             OccupiedGridKeys.Clear();
             OccupiedGridKeys.Add(newSlotKey);
 
-            // Remove hinge joints (disconnect and destroy them)
             foreach (Transform segment in _segments)
             {
                 HingeJoint hinge = segment.GetComponent<HingeJoint>();
@@ -273,8 +231,6 @@ namespace GreatGames.CaseLib.Slinky
                     Destroy(hinge);
                 }
             }
-
-            // Set rigidbody to kinematic for each segment to prevent physics interactions during movement
             foreach (Transform segment in _segments)
             {
                 Rigidbody rb = segment.GetComponent<Rigidbody>();
@@ -284,8 +240,38 @@ namespace GreatGames.CaseLib.Slinky
                 }
             }
 
-            _gridManager.LogLowerGridSlotStates();
+           // _gridManager.LogLowerGridSlotStates();
         }
+        void OnDrawGizmos()
+        {
+            if (!Application.isPlaying) return;
 
+            foreach (var segment in _segments)
+            {
+                Vector3 startPos = segment.position;
+                Vector3 direction = Vector3.up;
+                float distance = 2f;
+
+                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
+                bool hasValidHit = false;
+
+                foreach (var hit in hits)
+                {
+                    if (_segments.Contains(hit.collider.transform)) continue;
+
+                    hasValidHit = true;
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawSphere(hit.point, 0.2f);
+                    break;
+                }
+
+                if (!hasValidHit)
+                {
+                    Gizmos.color = Color.green;
+                }
+
+                Gizmos.DrawLine(startPos, startPos + direction * distance);
+            }
+        }
     }
 }
