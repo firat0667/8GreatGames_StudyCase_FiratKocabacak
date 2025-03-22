@@ -203,14 +203,16 @@ namespace GreatGames.CaseLib.Slinky
                 Gizmos.DrawLine(startPos, startPos + direction * distance);
             }
         }
-
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
+            // Prevent new movement if already moving
             if (_isMoving) return;
             _isMoving = true;
 
+            // Check if no new slot key is provided
             if (newSlotKey == null)
             {
+                // Try to find the first empty slot if no key is given
                 GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
                 if (emptySlotKey == null)
                 {
@@ -219,12 +221,15 @@ namespace GreatGames.CaseLib.Slinky
                 }
                 newSlotKey = emptySlotKey;
                 targetPosition = _gridManager.GetSlotPosition(newSlotKey, false);
-              
             }
+
+            // Place the slinky in the new slot
             _gridManager.TryPlaceSlinky(newSlotKey, this, false);
             SlotIndex = newSlotKey;
             OccupiedGridKeys.Clear();
             OccupiedGridKeys.Add(newSlotKey);
+
+            // Remove hinge joints (disconnect and destroy them)
             foreach (Transform segment in _segments)
             {
                 HingeJoint hinge = segment.GetComponent<HingeJoint>();
@@ -235,6 +240,7 @@ namespace GreatGames.CaseLib.Slinky
                 }
             }
 
+            // Set rigidbody to kinematic for each segment to prevent physics interactions during movement
             foreach (Transform segment in _segments)
             {
                 Rigidbody rb = segment.GetComponent<Rigidbody>();
@@ -244,8 +250,10 @@ namespace GreatGames.CaseLib.Slinky
                 }
             }
 
+            // Define the movement time
             float moveTime = _moveDuration * moveTimeMultiplier;
 
+            // Move each segment with a delay between them
             for (int i = 0; i < _segments.Count; i++)
             {
                 int index = i;
@@ -254,18 +262,20 @@ namespace GreatGames.CaseLib.Slinky
                 Vector3 startPos = _segments[index].position;
                 Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * arcHeight;
 
+                // Create a movement animation for each segment using DOPath
                 Tween moveTween = _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, moveTime, PathType.CatmullRom)
                     .SetDelay(delay)
                     .SetEase(_movementEase)
                     .SetRelative(false);
             }
 
+            // After all segments have finished their movement, finalize the process
             DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
             {
                 _isMoving = false;
-                OnMovementComplete?.Emit();
-                MatchManager.Instance.CheckForMatch();
-                _gridManager.LogLowerGridSlotStates();
+                OnMovementComplete?.Emit(); // Emit the movement completion signal
+                MatchManager.Instance.CheckForMatch(); // Check for any matches after the movement
+                _gridManager.LogLowerGridSlotStates(); // Log the grid state
             });
         }
 

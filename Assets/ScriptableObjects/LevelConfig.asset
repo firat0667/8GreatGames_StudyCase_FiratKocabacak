@@ -21,15 +21,15 @@ MonoBehaviour:
   - StartSlot: 3
     EndSlot: 5
     Color: 0
-  - StartSlot: 15
-    EndSlot: 20
+  - StartSlot: 20
+    EndSlot: 21
     Color: 0
   - StartSlot: 9
-    EndSlot: 19
+    EndSlot: 11
+    Color: 0
+  - StartSlot: 1
+    EndSlot: 7
     Color: 2
-  - StartSlot: 0
-    EndSlot: 1
-    Color: 3
-  - StartSlot: 12
-    EndSlot: 22
-    Color: 1
+  - StartSlot: 22
+    EndSlot: 12
+    Color: 2

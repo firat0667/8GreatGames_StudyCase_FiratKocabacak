@@ -232,7 +232,7 @@ namespace GreatGames.CaseLib.Grid
             {
                 Vector3 startPos = segment.position;
                 Vector3 direction = Vector3.up;
-                float distance = 3f;
+                float distance = 5f;
 
                 RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
                 foreach (var hit in hits)

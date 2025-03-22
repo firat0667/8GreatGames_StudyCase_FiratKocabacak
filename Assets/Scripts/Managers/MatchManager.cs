@@ -7,7 +7,6 @@ using GreatGames.CaseLib.Slinky;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -16,7 +15,6 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
     public bool Initialized { get; set; }
     private bool _isMatching = false;
     private GridManager _gridManager;
-    private AnimationQueue animationQueue = new AnimationQueue();
     private void Start()
     {
         _gridManager = GridManager.Instance;
@@ -144,66 +142,4 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         CheckForMatch();
     }
 
-
-
-}
-public class AnimationQueue
-{
-    private Queue<IEnumerator> _animationQueue = new Queue<IEnumerator>();
-    private bool _isAnimating = false;
-
-    // Method to add animations to the queue
-    public void AddToQueue(IEnumerator animation)
-    {
-        _animationQueue.Enqueue(animation);
-        if (!_isAnimating)
-        {
-            ProcessQueue();
-        }
-    }
-
-    private void ProcessQueue()
-    {
-        if (_animationQueue.Count > 0)
-        {
-            _isAnimating = true;
-            // Start the next animation in the queue
-            CoroutineRunner.Instance.StartCoroutine(_animationQueue.Dequeue());
-        }
-        else
-        {
-            _isAnimating = false;
-        }
-    }
-
-    // Method to signal completion and start the next animation
-    public void OnAnimationComplete()
-    {
-        ProcessQueue();
-    }
-    public class CoroutineRunner : MonoBehaviour
-    {
-        // Singleton instance
-        public static CoroutineRunner Instance { get; private set; }
-
-        private void Awake()
-        {
-            // Ensure only one instance of CoroutineRunner exists
-            if (Instance == null)
-            {
-                Instance = this;
-                DontDestroyOnLoad(gameObject); // Persist across scenes
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
-        }
-
-        // Method to start a coroutine from any other class
-        public void StartCoroutineFromOtherClass(IEnumerator routine)
-        {
-            StartCoroutine(routine);
-        }
-    }
 }
