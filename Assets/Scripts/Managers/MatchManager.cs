@@ -96,7 +96,9 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
         bool leftDone = false;
         bool rightDone = false;
-
+        left.IsMatch = true;
+        right.IsMatch = true;
+        middle.IsMatch = true;
         // Eventleri önce temizle, sonra bağla
         left.OnMovementComplete.DisconnectAll();
         right.OnMovementComplete.DisconnectAll();
@@ -132,9 +134,7 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         if (right != null) Destroy(right.gameObject);
 
         yield return new WaitForSeconds(0.1f);
-
         _gridManager.ShiftRemainingSlinkies();
-
         yield return new WaitForSeconds(0.2f);
 
         _isMatching = false;

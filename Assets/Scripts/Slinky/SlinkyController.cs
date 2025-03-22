@@ -6,6 +6,7 @@ using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Slinky
@@ -33,6 +34,7 @@ namespace GreatGames.CaseLib.Slinky
         private List<Transform> _segments = new();
 
         private bool _isMoving = false;
+        public bool IsMatch;
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
         private GridManager _gridManager;
@@ -207,6 +209,38 @@ namespace GreatGames.CaseLib.Slinky
         {
             // Prevent new movement if already moving
             if (_isMoving) return;
+
+
+            // Define the movement time
+            float moveTime = _moveDuration * moveTimeMultiplier;
+
+            // Move each segment with a delay between them
+            for (int i = 0; i < _segments.Count; i++)
+            {
+                int index = i;
+                float delay = i * delayBetweenSegments;
+
+                Vector3 startPos = _segments[index].position;
+                Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * arcHeight;
+
+                // Create a movement animation for each segment using DOPath
+                Tween moveTween = _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, moveTime, PathType.CatmullRom)
+                    .SetDelay(delay)
+                    .SetEase(_movementEase)
+                    .SetRelative(false);
+            }
+
+            // After all segments have finished their movement, finalize the process
+            DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
+            {
+                _isMoving = false;
+                OnMovementComplete?.Emit(); // Emit the movement completion signal
+                MatchManager.Instance.CheckForMatch(); // Check for any matches after the movement
+               // Log the grid state
+                _gridManager.ShiftRemainingSlinkies();
+            });
+
+            if (IsMatch) return;
             _isMoving = true;
 
             // Check if no new slot key is provided
@@ -250,33 +284,7 @@ namespace GreatGames.CaseLib.Slinky
                 }
             }
 
-            // Define the movement time
-            float moveTime = _moveDuration * moveTimeMultiplier;
-
-            // Move each segment with a delay between them
-            for (int i = 0; i < _segments.Count; i++)
-            {
-                int index = i;
-                float delay = i * delayBetweenSegments;
-
-                Vector3 startPos = _segments[index].position;
-                Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * arcHeight;
-
-                // Create a movement animation for each segment using DOPath
-                Tween moveTween = _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, moveTime, PathType.CatmullRom)
-                    .SetDelay(delay)
-                    .SetEase(_movementEase)
-                    .SetRelative(false);
-            }
-
-            // After all segments have finished their movement, finalize the process
-            DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
-            {
-                _isMoving = false;
-                OnMovementComplete?.Emit(); // Emit the movement completion signal
-                MatchManager.Instance.CheckForMatch(); // Check for any matches after the movement
-                _gridManager.LogLowerGridSlotStates(); // Log the grid state
-            });
+            _gridManager.LogLowerGridSlotStates();
         }
 
     }

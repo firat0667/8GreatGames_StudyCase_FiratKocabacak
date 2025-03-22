@@ -133,7 +133,7 @@ namespace GreatGames.CaseLib.Grid
                 }
 
                 OnGridUpdated?.Emit();
-                DebugLowerGridColors();
+             //  DebugLowerGridColors();
                 return true;
             }
             return false;
@@ -224,14 +224,23 @@ namespace GreatGames.CaseLib.Grid
                 .Select(kvp => kvp.Key)
                 .FirstOrDefault();
         }
-
-
+        public List<GameKey> GetEmptySlots(bool isUpperGrid)
+        {
+            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
+            return grid.GetAllSlots()
+                .Where(kvp => !kvp.Value.IsOccupied) 
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
+                .Select(kvp => kvp.Key) 
+                .ToList(); 
+        }
         public bool IsThereLongerSlinkyBlocking(SlinkyController slinky)
         {
             foreach (var segment in slinky.Segments)
             {
                 Vector3 startPos = segment.position;
-                Vector3 direction = Vector3.up;
+                Vector3 direction = Vector3.up;  // Burada herhangi bir yön kullanılabilir.
+                direction.Normalize(); // Yönü normalize et
+
                 float distance = 5f;
 
                 RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
@@ -248,22 +257,61 @@ namespace GreatGames.CaseLib.Grid
         }
         public void ShiftRemainingSlinkies()
         {
-            // Boş slotları al ve ters sırayla sıralanacak şekilde
-            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid().OrderByDescending(slot => slot.ToVector2Int().y).ToList();
+            // Boş slotları al ve **en büyükten en küçüğe** sıralayalım
+            List<GameKey> emptySlots = GetEmptySlots(false)
+                .OrderByDescending(slot => slot.ToVector2Int().x) // X koordinatına göre azalan sırada (en büyükten en küçüğe)
+                .ToList();
+
+            // Debug: Boş slotların içeriğini yazdır
+            Debug.Log("Boş Slotlar (emptySlots):");
+            foreach (var slot in emptySlots)
+            {
+                Debug.Log($"Slot: {slot.ValueAsString} | X Koordinatı: {slot.ToVector2Int().x} | Y Koordinatı: {slot.ToVector2Int().y}");
+            }
 
             // Alt griddeki tüm slinky'leri al
-            List<SlinkyController> lowerGrids = GetAllSlinkiesInLowerGrid();
+            List<SlinkyController> lowerGrids = GetAllSlinkiesInLowerGrid()
+                .OrderByDescending(slinky => slinky.OccupiedGridKeys[0].ToVector2Int().x) // Slinky'leri X değerlerine göre azalan sırada sırala
+                .ToList();
+
+            // Debug: Slinky'lerin içeriğini yazdır
+            Debug.Log("Alt Griddeki Slinky'ler (lowerGrids):");
+            foreach (var slinky in lowerGrids)
+            {
+                Debug.Log($"Slinky: {slinky.name} | Slotlar: {string.Join(", ", slinky.OccupiedGridKeys.Select(k => k.ValueAsString))}");
+            }
 
             int slotIndex = 0;
 
-            // Ters sırayla boş slotlara slinky'leri yerleştir
+            // Boş slotlara slinky'leri yerleştir
             foreach (var slinky in lowerGrids)
             {
                 // Eğer boş slotlar bitti ise, işlem sonlandırılacak
                 if (slotIndex >= emptySlots.Count) break;
 
+                // Slinkyin bulunduğu ilk slotu al
+                GameKey currentSlot = slinky.OccupiedGridKeys[0];
+                int currentX = currentSlot.ToVector2Int().x;
+
+                // Boş slotları kontrol et
                 GameKey targetSlot = emptySlots[slotIndex];
+                int targetX = targetSlot.ToVector2Int().x;
+
+                // Eğer slinky'nin X değeri, boş slotların X değerinden büyükse işlem yapma
+                if (currentX >= targetX)
+                {
+                    Debug.Log($"Slinky'nin bulunduğu X değeri ({currentX}) boş slotun X değerinden ({targetX}) büyük. Kaydırma yapılmadı.");
+                    continue; // Bu slinky için kaydırma işlemi yapılmasın
+                }
+
                 Vector3 targetPosition = GetSlotPosition(targetSlot, false);
+
+                // Eğer slinky zaten bu hedef slotta (L_4,0 gibi) ise, işlem yapma
+                if (slinky.OccupiedGridKeys.Contains(targetSlot))
+                {
+                    Debug.Log($"Slinky zaten {targetSlot.ValueAsString} slotunda, işlem yapılmadı.");
+                    continue; // Bu slinky için bir şey yapma
+                }
 
                 // Önce mevcut slotundan kaldır
                 _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]);
@@ -285,11 +333,7 @@ namespace GreatGames.CaseLib.Grid
                 slotIndex++;
             }
         }
-        public SlinkyController GetSlinkyAtSlot(GameKey slot)
-        {
-            var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(slot));
-            return slinky;
-        }
+
 
         public void DebugLowerGridColors()
         {
@@ -298,12 +342,25 @@ namespace GreatGames.CaseLib.Grid
 
             foreach (var kvp in allSlots)
             {
-                var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(kvp.Key)); 
-                string slinkyColor = (slinky != null) ? slinky.SlinkyColor.ToString() : "unKnow";
+                var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(kvp.Key));
+                string slinkyColor = (slinky != null) ? slinky.SlinkyColor.ToString() : "unKnown";
                 string slotStatus = (slinky != null) ? "Full" : "Empty";
 
+                // Veriyi colorMap'e ekle
+                colorMap[kvp.Key] = $"{slinkyColor} - {slotStatus}";
+
+                // Debug: Slot bilgilerini yazdır
+                Debug.Log($"Slot: {kvp.Key.ValueAsString} | Color: {slinkyColor} | Status: {slotStatus}");
+            }
+
+            // Eğer tüm veriyi bir arada görmek isterseniz
+            Debug.Log("Color Map:");
+            foreach (var item in colorMap)
+            {
+                Debug.Log($"Slot: {item.Key.ValueAsString}, Color: {item.Value}");
             }
         }
+
 
         public GameKey GetGridKeyFromPosition(Vector3 position)
         {
