@@ -74,20 +74,20 @@ namespace GreatGames.CaseLib.Grid
             OnGridUpdated.Emit();
         }
 
-        public void ClearSlot(GameKey key)
-        {
-            if (!_slots.ContainsKey(key)) return;
+public void ClearSlot(GameKey key)
+{
+    if (!_slots.ContainsKey(key)) return;
 
-            _slots[key].SetOccupied(false);
-            _slots[key].RemoveSlinky();
+    _slots[key].SetOccupied(false);
+    _slots[key].RemoveSlinky();
 
-            if (!_emptySlots.Contains(key))
-            {
-                _emptySlots.Enqueue(key);
-            }
+    if (!_emptySlots.Contains(key))
+    {
+        _emptySlots.Enqueue(key);
+    }
 
-            OnGridUpdated.Emit();
-        }
+    OnGridUpdated.Emit();
+}
 
 
         public bool IsSlotEmpty(GameKey key)

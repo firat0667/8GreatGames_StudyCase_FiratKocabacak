@@ -48,10 +48,10 @@ MonoBehaviour:
   segmentsPerUnit: 4
   heightMultiplierFactor: 0.3
   horizontalTightness: 0.8
-  springForce: 1000
-  dampingFactor: 555
-  _moveDuration: 0.2
+  springForce: 1200
+  dampingFactor: 250
+  _moveDuration: 0.3
   _movementEase: 7
   delayBetweenSegments: 0.01
   arcHeight: 1.5
-  moveTimeMultiplier: 2
+  moveTimeMultiplier: 1.5

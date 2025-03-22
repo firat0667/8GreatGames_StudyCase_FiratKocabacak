@@ -200,8 +200,8 @@ namespace GreatGames.CaseLib.Grid
 
             foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
             {
-                string status = kvp.Value.IsOccupied ? "🟥 Dolu" : "⬜ Boş";
-                Debug.Log($"  ↪ {kvp.Key.ValueAsString} : {status}");
+                string status = kvp.Value.IsOccupied ? "IsOccupied" : "Empty";
+                Debug.Log($"{kvp.Key.ValueAsString} : {status}");
             }
         }
 
@@ -232,7 +232,7 @@ namespace GreatGames.CaseLib.Grid
             {
                 Vector3 startPos = segment.position;
                 Vector3 direction = Vector3.up;
-                float distance = 2f;
+                float distance = 3f;
 
                 RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
                 foreach (var hit in hits)
@@ -248,28 +248,40 @@ namespace GreatGames.CaseLib.Grid
         }
         public void ShiftRemainingSlinkies()
         {
-            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid();
-            foreach (var slot in emptySlots)
-                Debug.Log($"🧩 EmptySlot: {slot.ValueAsString}");
-            List<SlinkyController> lowergrids = GetAllSlinkiesInLowerGrid();
+            // Boş slotları al ve ters sırayla sıralanacak şekilde
+            List<GameKey> emptySlots = GetEmptySlotsInLowerGrid().OrderByDescending(slot => slot.ToVector2Int().y).ToList();
+
+            // Alt griddeki tüm slinky'leri al
+            List<SlinkyController> lowerGrids = GetAllSlinkiesInLowerGrid();
 
             int slotIndex = 0;
 
-            foreach (var slinky in lowergrids)
+            // Ters sırayla boş slotlara slinky'leri yerleştir
+            foreach (var slinky in lowerGrids)
             {
-                if (slotIndex >= emptySlots.Count) break; 
+                // Eğer boş slotlar bitti ise, işlem sonlandırılacak
+                if (slotIndex >= emptySlots.Count) break;
 
                 GameKey targetSlot = emptySlots[slotIndex];
                 Vector3 targetPosition = GetSlotPosition(targetSlot, false);
 
-                _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]); 
-                _lowerGrid.PlaceSlinky(slinky, targetSlot); 
+                // Önce mevcut slotundan kaldır
+                _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]);
 
+                // Sonra boş slotlara yerleştir
+                _lowerGrid.PlaceSlinky(slinky, targetSlot);
+
+                // Yeni yerleştirilen slotu güncelle
                 slinky.OccupiedGridKeys.Clear();
                 slinky.OccupiedGridKeys.Add(targetSlot);
-                Debug.Log($"🎯 {slinky.name} → TargetSlot: {targetSlot.ValueAsString}");
-                slinky.MoveToTarget(targetPosition, targetSlot); 
 
+                // Hedef slotu ve kaydırma işlemine dair loglama
+                Debug.Log($"🎯 {slinky.name} → TargetSlot: {targetSlot.ValueAsString}");
+
+                // Slinky'yi yeni hedefe doğru hareket ettir
+                slinky.MoveToTarget(targetPosition, targetSlot);
+
+                // Bir sonraki slotu hedeflemek için indexi artır
                 slotIndex++;
             }
         }

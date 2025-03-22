@@ -265,7 +265,7 @@ namespace GreatGames.CaseLib.Slinky
                 _isMoving = false;
                 OnMovementComplete?.Emit();
                 MatchManager.Instance.CheckForMatch();
-                GridManager.Instance.LogLowerGridSlotStates();
+                _gridManager.LogLowerGridSlotStates();
             });
         }
 
