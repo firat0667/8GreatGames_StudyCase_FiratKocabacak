@@ -6,6 +6,7 @@ using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace GreatGames.CaseLib.Slinky
 {
@@ -36,8 +37,8 @@ namespace GreatGames.CaseLib.Slinky
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
         private GridManager _gridManager;
-        public Color SlinkyColor => _slinkyColor;
-        private Color _slinkyColor;
+        public SlinkyColor SlinkyColor => _slinkyColor;
+        private SlinkyColor _slinkyColor;
         public bool Initialized { get; set; }
 
         private GameObject _startSlotObject;
@@ -52,6 +53,7 @@ namespace GreatGames.CaseLib.Slinky
         public GameKey SlotIndex { get; set; }
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
+
         private void Awake()
         {
             Init();
@@ -68,7 +70,7 @@ namespace GreatGames.CaseLib.Slinky
         {
             _startSlotObject = startSlot;
             _endSlotObject = endSlot;
-            _slinkyColor = SlinkyColorUtility.GetColor(color);
+            _slinkyColor = color;
             _slinkyParent = slinkyParent;
             _segments.Clear();
             _gridManager = gridManager;
@@ -111,7 +113,7 @@ namespace GreatGames.CaseLib.Slinky
                 Renderer renderer = segment.GetComponentInChildren<Renderer>();
                 if (renderer != null)
                 {
-                    renderer.material.color = _slinkyColor;
+                    renderer.material.color = SlinkyColorUtility.GetColor(_slinkyColor);
                 }
 
                 Rigidbody rb = segment.AddComponent<Rigidbody>();
@@ -155,7 +157,7 @@ namespace GreatGames.CaseLib.Slinky
                 return;
             }
 
-            GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
+            GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
 
             if (emptySlotKey == null)
             {
@@ -168,14 +170,21 @@ namespace GreatGames.CaseLib.Slinky
             {
                 return;
             }
-
+            if (_gridManager.IsSlotOccupied(emptySlotKey))
+            {
+                bool shiftSuccess = _gridManager.ShiftUntilFit(emptySlotKey);
+                if (!shiftSuccess)
+                {
+                    // game end 
+                    return;
+                }
+            }
             _isSelected = true;
             MoveToTarget(targetPosition, emptySlotKey);
         }
         public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
         {
             if (_isMoving) return;
-
 
             float moveTime = _moveDuration * moveTimeMultiplier;
 
@@ -197,8 +206,8 @@ namespace GreatGames.CaseLib.Slinky
                 _isMoving = false;
                 OnMovementComplete?.Emit();
                 _gridManager.ShiftRemainingSlinkies();
-                MatchManager.Instance.CheckForMatch(); 
-                
+                MatchManager.Instance.CheckForMatch();
+
             });
 
             if (IsMatch) return;
@@ -238,39 +247,37 @@ namespace GreatGames.CaseLib.Slinky
                     rb.isKinematic = true;
                 }
             }
-
-           // _gridManager.LogLowerGridSlotStates();
         }
-        void OnDrawGizmos()
-        {
-            if (!Application.isPlaying) return;
+        //void OnDrawGizmos()
+        //{
+        //    if (!Application.isPlaying) return;
 
-            foreach (var segment in _segments)
-            {
-                Vector3 startPos = segment.position;
-                Vector3 direction = Vector3.up;
-                float distance = 2f;
+        //    foreach (var segment in _segments)
+        //    {
+        //        Vector3 startPos = segment.position;
+        //        Vector3 direction = Vector3.up;
+        //        float distance = 2f;
 
-                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
-                bool hasValidHit = false;
+        //        RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
+        //        bool hasValidHit = false;
 
-                foreach (var hit in hits)
-                {
-                    if (_segments.Contains(hit.collider.transform)) continue;
+        //        foreach (var hit in hits)
+        //        {
+        //            if (_segments.Contains(hit.collider.transform)) continue;
 
-                    hasValidHit = true;
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(hit.point, 0.2f);
-                    break;
-                }
+        //            hasValidHit = true;
+        //            Gizmos.color = Color.red;
+        //            Gizmos.DrawSphere(hit.point, 0.2f);
+        //            break;
+        //        }
 
-                if (!hasValidHit)
-                {
-                    Gizmos.color = Color.green;
-                }
+        //        if (!hasValidHit)
+        //        {
+        //            Gizmos.color = Color.green;
+        //        }
 
-                Gizmos.DrawLine(startPos, startPos + direction * distance);
-            }
-        }
+        //        Gizmos.DrawLine(startPos, startPos + direction * distance);
+        //    }
+       // }
     }
 }

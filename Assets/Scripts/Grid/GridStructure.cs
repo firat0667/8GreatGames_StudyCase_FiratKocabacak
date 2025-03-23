@@ -155,7 +155,8 @@ namespace GreatGames.CaseLib.Grid
         {
             if (_slots.ContainsKey(key))
             {
-                _slots[key].SetSlinky(slinky); 
+                _slots[key].SetSlinky(slinky);
+                _slots[key].SetOccupied(true);
             }
         }
     }

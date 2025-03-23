@@ -12,24 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ba268ac58fcefc46b900ebf6ee2b3da, type: 3}
   m_Name: LevelConfig
   m_EditorClassIdentifier: 
-  UpperGridSize: {x: 12, y: 5}
-  LowerGridSize: {x: 12, y: 1}
+  UpperGridSize: {x: 4, y: 5}
+  LowerGridSize: {x: 4, y: 1}
   Slinkies:
-  - StartSlot: 0
-    EndSlot: 18
-    Color: 0
-  - StartSlot: 2
-    EndSlot: 26
-    Color: 0
-  - StartSlot: 4
-    EndSlot: 28
-    Color: 0
-  - StartSlot: 1
-    EndSlot: 25
-    Color: 2
   - StartSlot: 3
-    EndSlot: 27
-    Color: 2
-  - StartSlot: 5
-    EndSlot: 29
-    Color: 2
+    EndSlot: 19
+    Color: 0
+  - StartSlot: 8
+    EndSlot: 11
+    Color: 0
+  - StartSlot: 0
+    EndSlot: 16
+    Color: 0

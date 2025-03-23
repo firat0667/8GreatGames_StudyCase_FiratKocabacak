@@ -12,6 +12,7 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
     public bool Initialized { get; set; }
     private bool _isMatching = false;
     private GridManager _gridManager;
+    [SerializeField] private float _mergeBetweenTimer = 0.1f;
     private void Start()
     {
         _gridManager = GridManager.Instance;
@@ -62,10 +63,28 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
     {
         return a.SlinkyColor == b.SlinkyColor && a.SlinkyColor == c.SlinkyColor;
     }
+    public bool CheckAnyAvailableMatch()
+    {
+        var allSlinkies = GridManager.Instance.GetAllSlinkiesInLowerGrid();
 
+        for (int i = 1; i < allSlinkies.Count - 1; i++)
+        {
+            var left = allSlinkies[i - 1];
+            var middle = allSlinkies[i];
+            var right = allSlinkies[i + 1];
+
+            if (IsSameColor(left, middle, right))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     private IEnumerator HandleMatch(SlinkyController left, SlinkyController middle, SlinkyController right)
     {
-        if (left == null || middle == null || right == null || left.IsMoving  || middle.IsMoving || right.IsMoving)
+        if (left == null || middle == null || right == null 
+            || left.IsMoving  || middle.IsMoving || right.IsMoving)
         {
             yield break;
         }
@@ -106,18 +125,19 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         middle.DestroySegments();
         right.DestroySegments();
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(_mergeBetweenTimer);
 
         if (left != null)left.gameObject.SetActive(false);
         if (middle != null) middle.gameObject.SetActive(false);
         if (right != null) right.gameObject.SetActive(false);
 
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(_mergeBetweenTimer);
         _gridManager.ShiftRemainingSlinkies();
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(_mergeBetweenTimer);
 
         _isMatching = false;
-
+        GameManager.Instance.CheckForCompletion();
+        GameManager.Instance.CheckGameState();
         CheckForMatch();
     }
  }

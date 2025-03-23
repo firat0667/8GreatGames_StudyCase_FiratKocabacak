@@ -1,5 +1,4 @@
 using GreatGames.CaseLib.DI;
-using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
 using GreatGames.CaseLib.Utility;

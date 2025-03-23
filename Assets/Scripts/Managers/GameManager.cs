@@ -1,16 +1,48 @@
+using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Patterns;
-
+using GreatGames.CaseLib.UI;
+using UnityEngine;
+public enum GameState
+{
+    LevelDone,
+    LevelFailed,
+    Pause,
+}
 public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleton
 {
+
     public bool Initialized { get; set; }
-    void Start()
+    private bool _levelCompleted;
+    public void TriggerLevelDone()
     {
-        
+        VFXManager.Instance.PlayLevelDoneParticle();
+        UIManager.Instance.ShowLevelDonePanel();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void TriggerLevelFailed()
     {
-        
+        UIManager.Instance.ShowLevelFailedPanel();
     }
-}
+    public void CheckGameState()
+    {
+        bool isFull = GridManager.Instance.IsLowerGridFull();
+        bool hasMatch = MatchManager.Instance.CheckAnyAvailableMatch();
+
+        if (isFull && !hasMatch)
+        {
+           Instance.TriggerLevelFailed();
+        }
+    }
+    public void CheckForCompletion()
+    {
+        if (_levelCompleted) return;
+
+        bool allSlinkiesCleared = GridManager.Instance.GetAllSlinkies().Count == 0;
+        if (allSlinkiesCleared)
+        {
+            _levelCompleted = true;
+            UIManager.Instance.ShowLevelDonePanel();
+        }
+    }
+ }
+

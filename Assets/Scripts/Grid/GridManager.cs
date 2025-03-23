@@ -1,5 +1,4 @@
-﻿using DG.Tweening;
-using GreatGames.CaseLib.DI;
+﻿using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
@@ -32,6 +31,8 @@ namespace GreatGames.CaseLib.Grid
         private LevelConfigSO _levelData;
 
        private List<SlinkyController> _slinkies = new List<SlinkyController>();
+
+
 
         private void OnEnable()
         {
@@ -112,7 +113,6 @@ namespace GreatGames.CaseLib.Grid
                 SlinkyController slinky = Instantiate(_slinkyPrefab, startPos, Quaternion.identity);
                 slinky.transform.SetParent(slinkyContainer.transform);
                 slinky.Initialize(startPos, endPos, this, slinkyData.Color, startSlotObject, endSlotObject, slinkyContainer.transform);
-                Debug.Log("Slinkies" + slinkyData.Color);
                 startGrid.SetSlotOccupied(startKey, slinky);
                 endGrid.SetSlotOccupied(endKey, slinky);
             }
@@ -198,6 +198,34 @@ namespace GreatGames.CaseLib.Grid
         {
             return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
         }
+        public GameKey GetFirstColorEmptySlotOrNextToMatch(SlinkyController slinky)
+        {
+            var slots = _lowerGrid.GetAllSlots()
+                .OrderBy(kvp => kvp.Key.ToVector2Int().x) 
+                .ToList();
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                var currentSlot = slots[i];
+                if (!currentSlot.Value.HasSlinky) continue;
+
+                var existingSlinky = currentSlot.Value.Slinky;
+                if (existingSlinky != null && existingSlinky.SlinkyColor == slinky.SlinkyColor)
+                {
+                    int leftIndex = i - 1;
+                    if (leftIndex >= 0)
+                    {
+                        return slots[leftIndex].Key; 
+                    }
+                    else
+                    {
+                        return currentSlot.Key;
+                    }
+                }
+            }
+
+            return GetFirstEmptySlot(false);
+        }
         public GameKey GetFirstEmptySlot(bool isUpperGrid)
         {
             var grid = isUpperGrid ? _upperGrid : _lowerGrid;
@@ -274,17 +302,32 @@ namespace GreatGames.CaseLib.Grid
                 }
 
                 _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]);
+                _lowerGrid.ClearSlot(currentSlot);
                 _lowerGrid.PlaceSlinky(slinky, targetSlot);
 
                 slinky.OccupiedGridKeys.Clear();
                 slinky.OccupiedGridKeys.Add(targetSlot);
 
                 slinky.MoveToTarget(targetPosition, targetSlot);
-
+              
                 slotIndex++;
             }
         }
- 
+        public bool IsSlotOccupied(GameKey key)
+        {
+            if (key == null)
+            {
+                return false;
+            }
+
+            if (_lowerGrid.TryGetContainer(key, out var container))
+            {
+                return container.IsOccupied;
+            }
+
+            return false;
+        }
+
         public GameKey GetGridKeyFromPosition(Vector3 position)
         {
             foreach (var kvp in _upperGrid.GetAllSlots())
@@ -315,6 +358,81 @@ namespace GreatGames.CaseLib.Grid
                 slinky.OccupiedGridKeys.All(key => key.IsLower())
             ).ToList();
         }
+        public  void AlignGridOffsets(
+            Vector2Int upperSize, Vector2Int lowerSize,
+            ref Vector3 upperOffset, ref Vector3 lowerOffset)
+        {
+            int upperWidth = upperSize.x;
+            int lowerWidth = lowerSize.x;
+
+            if (lowerWidth > upperWidth)
+            {
+                float diff = (lowerWidth - upperWidth) / 2f;
+                upperOffset.x += diff;
+            }
+            else if (upperWidth > lowerWidth)
+            {
+                float diff = (upperWidth - lowerWidth) / 2f;
+                lowerOffset.x += diff;
+            }
+        }
+        public bool ShiftUntilFit(GameKey targetKey)
+        {
+            var slots = _lowerGrid.GetAllSlots()
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
+                .ToList();
+
+            int index = slots.FindIndex(kvp => kvp.Key == targetKey);
+            if (index == -1)
+            {
+                return false;
+            }
+            int rightmostFreeIndex = -1;
+            for (int i = index + 1; i < slots.Count; i++)
+            {
+
+                if (!slots[i].Value.IsOccupied)
+                {
+                    rightmostFreeIndex = i;
+                    break;
+                }
+            }
+
+            if (rightmostFreeIndex == -1)
+            {
+                return false;
+            }
+
+            for (int i = rightmostFreeIndex; i > index; i--)
+            {
+                var fromSlot = slots[i - 1];
+                var toSlot = slots[i];
+
+                var slinky = fromSlot.Value.Slinky;
+                if (slinky == null)
+                {
+                    continue;
+                }
+
+                Vector3 targetPos = GetSlotPosition(toSlot.Key, false);
+
+                _lowerGrid.ClearSlot(fromSlot.Key);
+                _lowerGrid.PlaceSlinky(slinky, toSlot.Key);
+
+                slinky.OccupiedGridKeys.Clear();
+                slinky.OccupiedGridKeys.Add(toSlot.Key);
+                slinky.MoveToTarget(targetPos, toSlot.Key);
+            }
+            return true;
+        }
+        public List<SlinkyController> GetAllSlinkies()
+        {
+            return _slinkies;
+        }
+        public bool IsLowerGridFull()
+        {
+            return GetEmptySlots(false).Count == 0;
+        }
         public void DebugLowerGridColors()
         {
             var allSlots = _lowerGrid.GetAllSlots();
@@ -331,30 +449,11 @@ namespace GreatGames.CaseLib.Grid
         }
         public void LogLowerGridSlotStates()
         {
-            Debug.Log("Lower Grid Slot statues:");
 
             foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
             {
                 string status = kvp.Value.IsOccupied ? "IsOccupied" : "Empty";
                 Debug.Log($"{kvp.Key.ValueAsString} : {status}");
-            }
-        }
-        public  void AlignGridOffsets(
-           Vector2Int upperSize, Vector2Int lowerSize,
-           ref Vector3 upperOffset, ref Vector3 lowerOffset)
-        {
-            int upperWidth = upperSize.x;
-            int lowerWidth = lowerSize.x;
-
-            if (lowerWidth > upperWidth)
-            {
-                float diff = (lowerWidth - upperWidth) / 2f;
-                upperOffset.x += diff;
-            }
-            else if (upperWidth > lowerWidth)
-            {
-                float diff = (upperWidth - lowerWidth) / 2f;
-                lowerOffset.x += diff;
             }
         }
     }

@@ -1,9 +1,10 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using GreatGames.CaseLib.Grid;
+using GreatGames.CaseLib.Level;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
-using GreatGames.CaseLib.Grid;
-using GreatGames.CaseLib.Level;
+using GreatGames.CaseLib.UI;
+using System.Collections;
+using UnityEngine;
 
 public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingleton
 {
@@ -18,15 +19,15 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
     public bool Initialized { get ; set; }
 
-    public new void Init()
+    private void Awake()
     {
-        Debug.Log("LevelManager Initialized!");
         StartCoroutine(LoadLevelRoutine());
     }
 
     public void LoadNextLevel()
     {
         DestroyOldLevel();
+        UIManager.Instance.ClearAllPanels();
         ProgressData.CurrentLevelIndex = (ProgressData.CurrentLevelIndex + 1) % ProgressData.Levels.Count;
         ProgressData.CurrentLevelCount++;
         StartCoroutine(LoadLevelRoutine());
@@ -54,8 +55,7 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
         LevelConfigSO currentLevel = GetCurrentLevel();
 
         if (currentLevel == null)
-        {
-            Debug.LogError("LoadCurrentLevel: GetCurrentLevel() NULL döndü!");
+        {;
             return;
         }
 
@@ -63,7 +63,6 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
         if (currentLevel.LevelController == null)
         {
-            Debug.LogError("LoadCurrentLevel: LevelController NULL!");
             return;
         }
 
@@ -72,11 +71,9 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
         if (GridManager.Instance == null)
         {
-            Debug.LogError("LoadCurrentLevel: GridManager.Instance NULL! Sahneye ekli olduğundan emin ol.");
             return;
         }
 
-        Debug.Log("Calling InitializeGrids with: " + currentLevel.UpperGridSize + " " + currentLevel.LowerGridSize);
 
         GridManager.Instance.InitializeGrids(currentLevel, levelInstance.transform);
         _mainCamera.AdjustCameraByLevelData(currentLevel);
