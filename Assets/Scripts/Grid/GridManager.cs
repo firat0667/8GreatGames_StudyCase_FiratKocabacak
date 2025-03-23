@@ -68,6 +68,13 @@ namespace GreatGames.CaseLib.Grid
             {
                 _lowerGrid = new GridStructure(_levelData.LowerGridSize, _mergeGridOffset, _gridPrefab, false);
             }
+            Vector3 upperOffset = _slinkyGridOffset;
+            Vector3 lowerOffset = _mergeGridOffset;
+
+            AlignGridOffsets(_levelData.UpperGridSize, _levelData.LowerGridSize, ref upperOffset, ref lowerOffset);
+
+            _upperGrid = new GridStructure(_levelData.UpperGridSize, upperOffset, _gridPrefab, true);
+            _lowerGrid = new GridStructure(_levelData.LowerGridSize, lowerOffset, _gridPrefab, false);
 
             _upperGrid.InitializeGrid(_levelData.UpperGridSize, _gridParent);
             _lowerGrid.InitializeGrid(_levelData.LowerGridSize, _gridParent);
@@ -136,7 +143,6 @@ namespace GreatGames.CaseLib.Grid
             return false;
         }
 
-
         public void RegisterSlinky(SlinkyController slinky)
         {
             _slinkies.Add(slinky);
@@ -186,21 +192,6 @@ namespace GreatGames.CaseLib.Grid
                     RemoveSlinky(slinky); 
                 }
             }
-        }
-        public void LogLowerGridSlotStates()
-        {
-            Debug.Log("Lower Grid Slot statues:");
-
-            foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
-            {
-                string status = kvp.Value.IsOccupied ? "IsOccupied" : "Empty";
-                Debug.Log($"{kvp.Key.ValueAsString} : {status}");
-            }
-        }
-
-        public bool IsSlotEmpty(GameKey key, bool isUpperGrid)
-        {
-            return isUpperGrid ? _upperGrid.IsSlotEmpty(key) : _lowerGrid.IsSlotEmpty(key);
         }
 
         public Vector3 GetSlotPosition(GameKey key, bool isUpperGrid)
@@ -293,24 +284,7 @@ namespace GreatGames.CaseLib.Grid
                 slotIndex++;
             }
         }
-
-
-        public void DebugLowerGridColors()
-        {
-            var allSlots = _lowerGrid.GetAllSlots();
-            Dictionary<GameKey, string> colorMap = new Dictionary<GameKey, string>();
-
-            foreach (var kvp in allSlots)
-            {
-                var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(kvp.Key));
-                string slinkyColor = (slinky != null) ? slinky.SlinkyColor.ToString() : "unKnown";
-                string slotStatus = (slinky != null) ? "Full" : "Empty";
-
-                colorMap[kvp.Key] = $"{slinkyColor} - {slotStatus}";
-            }
-        }
-
-
+ 
         public GameKey GetGridKeyFromPosition(Vector3 position)
         {
             foreach (var kvp in _upperGrid.GetAllSlots())
@@ -334,17 +308,6 @@ namespace GreatGames.CaseLib.Grid
             }
             return null;
         }
-
-
-        public List<GameKey> GetEmptySlotsInLowerGrid()
-        {
-            return _lowerGrid
-                .GetAllSlots()
-                .Where(kvp => !kvp.Value.IsOccupied)
-                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
-                .Select(kvp => kvp.Key)
-                .ToList();
-        }
         public List<SlinkyController> GetAllSlinkiesInLowerGrid()
         {
             return _slinkies.Where(slinky =>
@@ -352,7 +315,48 @@ namespace GreatGames.CaseLib.Grid
                 slinky.OccupiedGridKeys.All(key => key.IsLower())
             ).ToList();
         }
+        public void DebugLowerGridColors()
+        {
+            var allSlots = _lowerGrid.GetAllSlots();
+            Dictionary<GameKey, string> colorMap = new Dictionary<GameKey, string>();
 
+            foreach (var kvp in allSlots)
+            {
+                var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(kvp.Key));
+                string slinkyColor = (slinky != null) ? slinky.SlinkyColor.ToString() : "unKnown";
+                string slotStatus = (slinky != null) ? "Full" : "Empty";
+
+                colorMap[kvp.Key] = $"{slinkyColor} - {slotStatus}";
+            }
+        }
+        public void LogLowerGridSlotStates()
+        {
+            Debug.Log("Lower Grid Slot statues:");
+
+            foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
+            {
+                string status = kvp.Value.IsOccupied ? "IsOccupied" : "Empty";
+                Debug.Log($"{kvp.Key.ValueAsString} : {status}");
+            }
+        }
+        public  void AlignGridOffsets(
+           Vector2Int upperSize, Vector2Int lowerSize,
+           ref Vector3 upperOffset, ref Vector3 lowerOffset)
+        {
+            int upperWidth = upperSize.x;
+            int lowerWidth = lowerSize.x;
+
+            if (lowerWidth > upperWidth)
+            {
+                float diff = (lowerWidth - upperWidth) / 2f;
+                upperOffset.x += diff;
+            }
+            else if (upperWidth > lowerWidth)
+            {
+                float diff = (upperWidth - lowerWidth) / 2f;
+                lowerOffset.x += diff;
+            }
+        }
     }
 
 }

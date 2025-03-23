@@ -5,8 +5,6 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Slinky
@@ -50,6 +48,7 @@ namespace GreatGames.CaseLib.Slinky
 
         public Vector3 EndPosition => _endPosition;
         private Vector3 _endPosition;
+
         public GameKey SlotIndex { get; set; }
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();

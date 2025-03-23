@@ -42,7 +42,7 @@ namespace GreatGames.CaseLib.Grid
             _slots.Clear();
             _slotObjects.Clear();
 
-            string prefix = _isUpperGrid ? "U_" : "L_";
+            string prefix = GameKeyExtensions.GetPrefix(_isUpperGrid);
 
             for (int y = 0; y < size.y; y++)
             {

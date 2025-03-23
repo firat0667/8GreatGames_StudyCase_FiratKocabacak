@@ -8,6 +8,7 @@ using GreatGames.CaseLib.Level;
 public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingleton
 {
     public LevelDataSO ProgressData;
+    [SerializeField] private CameraPointer _mainCamera;
 
     public BasicSignal OnLevelLoaded { get; private set; } = new BasicSignal();
     public BasicSignal OnLevelUnloaded { get; private set; } = new BasicSignal();
@@ -78,7 +79,7 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
         Debug.Log("Calling InitializeGrids with: " + currentLevel.UpperGridSize + " " + currentLevel.LowerGridSize);
 
         GridManager.Instance.InitializeGrids(currentLevel, levelInstance.transform);
-
+        _mainCamera.AdjustCameraByLevelData(currentLevel);
         OnLevelLoaded.Emit();
     }
 

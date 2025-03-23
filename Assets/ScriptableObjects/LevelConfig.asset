@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ba268ac58fcefc46b900ebf6ee2b3da, type: 3}
   m_Name: LevelConfig
   m_EditorClassIdentifier: 
-  UpperGridSize: {x: 6, y: 5}
-  LowerGridSize: {x: 7, y: 1}
+  UpperGridSize: {x: 12, y: 5}
+  LowerGridSize: {x: 12, y: 1}
   Slinkies:
   - StartSlot: 0
     EndSlot: 18
