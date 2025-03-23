@@ -241,6 +241,51 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &745474832
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 745474833}
+  - component: {fileID: 745474834}
+  m_Layer: 0
+  m_Name: PoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &745474833
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745474832}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1067848169}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &745474834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745474832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cfe74cec02b0b34a94550e2b9c9beea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _mergeVfxPool: {fileID: 822912640}
 --- !u!1 &822912639
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,7 +297,7 @@ GameObject:
   - component: {fileID: 822912641}
   - component: {fileID: 822912640}
   m_Layer: 0
-  m_Name: ObjectPools
+  m_Name: MergeVFXpool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -271,9 +316,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PoolType: 0
-  Prefab: {fileID: 0}
+  Prefab: {fileID: 1575721338728490, guid: 4171bb92c5c591848b14be1db6f3efe2, type: 3}
   Prefabs: []
-  PoolCapacity: 30
+  PoolCapacity: 10
 --- !u!4 &822912641
 Transform:
   m_ObjectHideFlags: 0
@@ -519,6 +564,7 @@ Transform:
   - {fileID: 1046493249}
   - {fileID: 1608900837}
   - {fileID: 1410110327}
+  - {fileID: 745474833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1176432240
@@ -566,7 +612,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _spawnPool: {fileID: 822912640}
-  _spawnTransform: {fileID: 0}
 --- !u!1 &1261905998
 GameObject:
   m_ObjectHideFlags: 0
@@ -656,7 +701,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pool: {fileID: 822912640}
-  _vfxSpawner: {fileID: 0}
+  _vfxSpawner: {fileID: 1176432242}
 --- !u!1 &1608900835
 GameObject:
   m_ObjectHideFlags: 0

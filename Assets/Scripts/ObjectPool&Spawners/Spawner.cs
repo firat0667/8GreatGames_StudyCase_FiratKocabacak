@@ -18,7 +18,7 @@ namespace GreatGames.CaseLib.Game
     public abstract class Spawner : MonoBehaviour
     {
         [SerializeField] protected GameObjectPool _spawnPool;
-        [SerializeField] protected Transform _spawnTransform;
+         protected Transform _spawnTransform;
 
         protected GameObject Spawn()
         {
@@ -26,5 +26,12 @@ namespace GreatGames.CaseLib.Game
             go.transform.SetPositionAndRotation(_spawnTransform.position, _spawnTransform.rotation);
             return go;
         }
+        protected GameObject Spawn(Vector3 _selfSpawnTransform)
+        {
+            var go = _spawnPool.Retrieve();
+            go.transform.SetPositionAndRotation(_selfSpawnTransform, Quaternion.identity);
+            return go;
+        }
+
     }
 }

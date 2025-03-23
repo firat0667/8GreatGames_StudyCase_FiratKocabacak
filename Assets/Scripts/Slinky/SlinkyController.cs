@@ -143,7 +143,7 @@ namespace GreatGames.CaseLib.Slinky
             {
                 if (segment != null)
                 {
-                    Destroy(segment.gameObject); 
+                    segment.gameObject.SetActive(false);
                 }
             }
 

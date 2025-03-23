@@ -89,12 +89,15 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
         GameKey middleSlot = middle.SlotIndex;
         GameKey rightSlot = right.SlotIndex;
 
+
         left.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => leftDone);
 
         right.MoveToTarget(middlePos, middle.SlotIndex);
         yield return new WaitUntil(() => rightDone);
-        VFXManager.Instance.PlayMergeParticle(middle.gameObject.transform);
+
+        VFXManager.Instance.PlayMergeParticle(middlePos);
+
         _gridManager.RemoveSlinkyAt(leftSlot);
         _gridManager.RemoveSlinkyAt(middleSlot);
         _gridManager.RemoveSlinkyAt(rightSlot);
@@ -105,9 +108,9 @@ public class MatchManager : FoundationSingleton<MatchManager>, IFoundationSingle
 
         yield return new WaitForSeconds(0.1f);
 
-        if (left != null) Destroy(left.gameObject);
-        if (middle != null) Destroy(middle.gameObject);
-        if (right != null) Destroy(right.gameObject);
+        if (left != null)left.gameObject.SetActive(false);
+        if (middle != null) middle.gameObject.SetActive(false);
+        if (right != null) right.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(0.2f);
         _gridManager.ShiftRemainingSlinkies();

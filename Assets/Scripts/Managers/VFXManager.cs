@@ -1,9 +1,6 @@
 using GreatGames.CaseLib.Game;
-using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Pool;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class VFXManager : FoundationSingleton<VFXManager>, IFoundationSingleton
@@ -12,7 +9,7 @@ public class VFXManager : FoundationSingleton<VFXManager>, IFoundationSingleton
     [SerializeField] private GameObjectPool _pool;
     [SerializeField] private VFXSpawner _vfxSpawner;
 
-    public void PlayMergeParticle(Transform transformSpawner)
+    public void PlayMergeParticle(Vector3 transformSpawner)
     {
         _vfxSpawner.SpawnVFX(transformSpawner);
     }
