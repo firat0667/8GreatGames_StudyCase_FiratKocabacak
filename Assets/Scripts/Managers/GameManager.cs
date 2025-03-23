@@ -44,5 +44,10 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
             UIManager.Instance.ShowLevelDonePanel();
         }
     }
- }
+    public void ResetLevelState()
+    {
+        _levelCompleted = false;
+    }
+
+}
 

@@ -1085,9 +1085,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _baseFOV: 70
-  _fowMultiply: 5
+  _fowMultiply: 8
   _baseWidth: 6
-  _cameraXOffset: 0
+  _cameraXOffset: 0.25
   _cameraXMultiply: 1
 --- !u!1 &1046493248
 GameObject:

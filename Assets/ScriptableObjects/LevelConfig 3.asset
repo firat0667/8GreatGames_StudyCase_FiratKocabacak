@@ -18,36 +18,27 @@ MonoBehaviour:
   - StartSlot: 0
     EndSlot: 24
     Color: 0
-  - StartSlot: 3
-    EndSlot: 27
-    Color: 0
-  - StartSlot: 12
-    EndSlot: 17
-    Color: 0
-  - StartSlot: 1
-    EndSlot: 29
+  - StartSlot: 13
+    EndSlot: 21
     Color: 1
-  - StartSlot: 5
-    EndSlot: 25
+  - StartSlot: 15
+    EndSlot: 19
+    Color: 2
+  - StartSlot: 3
+    EndSlot: 5
+    Color: 2
+  - StartSlot: 29
+    EndSlot: 1
+    Color: 2
+  - StartSlot: 6
+    EndSlot: 17
+    Color: 1
+  - StartSlot: 4
+    EndSlot: 26
     Color: 1
   - StartSlot: 2
-    EndSlot: 20
-    Color: 1
-  - StartSlot: 6
-    EndSlot: 28
-    Color: 2
-  - StartSlot: 18
+    EndSlot: 23
+    Color: 0
+  - StartSlot: 20
     EndSlot: 11
-    Color: 2
-  - StartSlot: 10
-    EndSlot: 14
-    Color: 2
-  - StartSlot: 7
-    EndSlot: 21
-    Color: 3
-  - StartSlot: 23
-    EndSlot: 4
-    Color: 3
-  - StartSlot: 9
-    EndSlot: 26
-    Color: 3
+    Color: 0

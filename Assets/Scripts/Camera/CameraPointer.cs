@@ -24,8 +24,16 @@ public class CameraPointer : MonoBehaviour
         int upperWidth = levelData.UpperGridSize.x;
         int lowerWidth = levelData.LowerGridSize.x;
         int gridWidth = Mathf.Max(upperWidth, lowerWidth);
-
-        float scaleFactor = gridWidth / 2;
+        float scaleFactor = 0;
+        if (gridWidth%2==0)
+        {
+            scaleFactor = (gridWidth / 2) - (_cameraXOffset);
+        }
+        else
+        {
+            scaleFactor = (gridWidth / 2)+ (_cameraXOffset);
+        }
+        
         _cam = Camera.main != null ? Camera.main : GetComponent<Camera>();
         Vector3 currentPos = _cam.transform.position;
         _cam.transform.position = new Vector3((_cameraXMultiply * scaleFactor)-_cameraXOffset, currentPos.y, currentPos.z);

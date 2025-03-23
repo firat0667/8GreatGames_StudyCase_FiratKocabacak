@@ -47,6 +47,7 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
     private void LoadCurrentLevel()
     {
+        GameManager.Instance.ResetLevelState();
         if (ProgressData.CurrentLevelIndex >= ProgressData.Levels.Count)
         {
             ProgressData.CurrentLevelIndex = 0;

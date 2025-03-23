@@ -30,7 +30,7 @@ namespace GreatGames.CaseLib.Grid
 
         private LevelConfigSO _levelData;
 
-       private List<SlinkyController> _slinkies = new List<SlinkyController>();
+        private List<SlinkyController> _slinkies = new List<SlinkyController>();
 
 
 

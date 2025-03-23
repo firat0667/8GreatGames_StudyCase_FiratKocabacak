@@ -52,6 +52,6 @@ MonoBehaviour:
   dampingFactor: 250
   _moveDuration: 0.3
   _movementEase: 7
-  delayBetweenSegments: 0.02
+  delayBetweenSegments: 0.01
   arcHeight: 1.5
   moveTimeMultiplier: 1.5

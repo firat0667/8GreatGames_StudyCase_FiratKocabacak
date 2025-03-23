@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fedc50d9a668514c9d2797c5248a8c8, type: 3}
   m_Name: LevelData
   m_EditorClassIdentifier: 
-  CurrentLevelIndex: 1
-  CurrentLevelCount: 7
+  CurrentLevelIndex: 0
+  CurrentLevelCount: 5
   Levels:
   - {fileID: 11400000, guid: 659c6d646afb19346bd8df8c6fd8248a, type: 2}
   - {fileID: 11400000, guid: 09e52c40d28ccce478c0cdc51fe51988, type: 2}
