@@ -13,11 +13,7 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
 
     public bool Initialized { get; set; }
     private bool _levelCompleted;
-    public void TriggerLevelDone()
-    {
-        VFXManager.Instance.PlayLevelDoneParticle();
-        UIManager.Instance.ShowLevelDonePanel();
-    }
+
 
     public void TriggerLevelFailed()
     {
@@ -40,6 +36,7 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
         bool allSlinkiesCleared = GridManager.Instance.GetAllSlinkies().Count == 0;
         if (allSlinkiesCleared)
         {
+            VFXManager.Instance.PlayLevelDoneParticle();
             _levelCompleted = true;
             UIManager.Instance.ShowLevelDonePanel();
         }

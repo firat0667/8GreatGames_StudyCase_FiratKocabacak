@@ -6,7 +6,6 @@ using UnityEngine;
 public class VFXManager : FoundationSingleton<VFXManager>, IFoundationSingleton
 {
     public bool Initialized { get; set; }
-    [SerializeField] private GameObjectPool _pool;
     [SerializeField] private VFXSpawner _mergeVFXSpawner;
     [SerializeField] private VFXSpawner _levelDoneVFXSpawner;
     [SerializeField] private Transform _levelSuccesParticlePos;
@@ -17,6 +16,6 @@ public class VFXManager : FoundationSingleton<VFXManager>, IFoundationSingleton
     }
     public void PlayLevelDoneParticle()
     {
-       // _levelDoneVFXSpawner.SpawnVFX(_levelSuccesParticlePos.position);
+        _levelDoneVFXSpawner.SpawnVFX(_levelSuccesParticlePos.position);
     }
 }

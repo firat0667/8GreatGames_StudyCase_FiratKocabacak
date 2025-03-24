@@ -1,8 +1,5 @@
 namespace GreatGames.CaseLib.DI
 {
-    /// <summary>
-    /// Object carrier.
-    /// </summary>
     public class Container : IContainer
     {
         public object Value { get; set; }
@@ -12,10 +9,6 @@ namespace GreatGames.CaseLib.DI
             Value = cargo;
         }
     }
-
-    /// <summary>
-    /// Object container for DI.
-    /// </summary>
     public interface IContainer
     {
         object Value { get; set; }

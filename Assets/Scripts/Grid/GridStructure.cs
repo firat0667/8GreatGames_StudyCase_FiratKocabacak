@@ -17,15 +17,14 @@ namespace GreatGames.CaseLib.Grid
 
         private Dictionary<GameKey, GridDataContainer> _slots = new();
         private Queue<GameKey> _emptySlots = new();
-        private Dictionary<GameKey, GameObject> _slotObjects = new(); // ✅ Slot objelerini saklar
+        private Dictionary<GameKey, GameObject> _slotObjects = new(); 
 
         private Vector2Int _size;
+
         private bool _isUpperGrid;
 
-        public int SlotCount => _size.x * _size.y;
         public BasicSignal OnGridUpdated { get; private set; }
         public object Value { get => this; set { } }
-        public GridType Type => _isUpperGrid ? GridType.Upper : GridType.Lower;
 
         public GridStructure(Vector2Int size, Vector3 offset, GameObject slotPrefab, bool isUpperGrid)
         {

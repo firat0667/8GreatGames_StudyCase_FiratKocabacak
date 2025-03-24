@@ -2,9 +2,9 @@ using DG.Tweening;
 using GreatGames.CaseLib.Pool;
 using UnityEngine;
 
+
 public class TurnPool : MonoBehaviour
 {
-
     [SerializeField] private float _turnPoolTime;
     private GameObjectPool _pool;
 
