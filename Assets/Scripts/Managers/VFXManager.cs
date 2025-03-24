@@ -12,10 +12,10 @@ public class VFXManager : FoundationSingleton<VFXManager>, IFoundationSingleton
 
     public void PlayMergeParticle(Vector3 transformSpawner)
     {
-        _mergeVFXSpawner.SpawnVFX(transformSpawner);
+        _mergeVFXSpawner.SpawnMergeVFX(transformSpawner);
     }
     public void PlayLevelDoneParticle()
     {
-        _levelDoneVFXSpawner.SpawnVFX(_levelSuccesParticlePos.position);
+        _levelDoneVFXSpawner.SpawnSuccessVFX(_levelSuccesParticlePos, new Vector3(0,0,0));
     }
 }

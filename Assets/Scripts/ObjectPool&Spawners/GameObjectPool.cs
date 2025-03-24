@@ -13,7 +13,7 @@ namespace GreatGames.CaseLib.Pool
         public List<GameObject> Prefabs; 
         public int PoolCapacity = 30; 
 
-        private readonly Queue<GameObject> pool = new();
+        private readonly Queue<GameObject> _pool = new();
 
 
         private void Start()
@@ -22,7 +22,7 @@ namespace GreatGames.CaseLib.Pool
             {
                 var go = InstantiatePrefab();
                 go.SetActive(false);
-                pool.Enqueue(go);
+                _pool.Enqueue(go);
             }
         }
 
@@ -42,30 +42,31 @@ namespace GreatGames.CaseLib.Pool
 
         public GameObject Retrieve()
         {
-            if (pool.Count == 0 || pool.Count < 10)
+            GameObject go = null;
+
+            if (_pool.Count > 0)
             {
-                return InstantiatePrefab();
+                go = _pool.Dequeue();
+            }
+            else
+            {
+                go = Instantiate(Prefab, transform);
             }
 
-            var go = pool.Dequeue();
-            if (go == null)
-            {
-                go = InstantiatePrefab();
-            }
             go.SetActive(true);
             return go;
         }
 
         public void ReturnToPool(GameObject go)
         {
-            if (pool.Count >= PoolCapacity)
+            if (_pool.Count > PoolCapacity)
             {
                 Destroy(go);
             }
             else
             {
                 go.SetActive(false);
-                pool.Enqueue(go);
+                _pool.Enqueue(go);
             }
         }
     }

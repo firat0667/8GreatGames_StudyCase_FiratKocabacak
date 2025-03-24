@@ -4970,7 +4970,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 0
+  looping: 1
   prewarm: 0
   playOnAwake: 1
   useUnscaledTime: 0
@@ -9853,7 +9853,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7f407d41468d2d49a03e6a8dc74a59c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _type: 0
   _turnPoolTime: 2
+  _pool: {fileID: 0}
 --- !u!1 &1978644358173796
 GameObject:
   m_ObjectHideFlags: 0
