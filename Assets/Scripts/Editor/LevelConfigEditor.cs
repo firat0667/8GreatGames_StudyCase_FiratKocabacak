@@ -1,4 +1,5 @@
 ﻿using GreatGames.CaseLib.Grid;
+using GreatGames.CaseLib.Slinky;
 using GreatGames.CaseLib.Utility;
 using UnityEditor;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace GreatGames.CaseLib.EditorTools
         private LevelConfigSO _levelConfig;
         private int _selectedStartSlot = -1;
         private int _selectedEndSlot = -1;
-        private SlinkyColor _selectedColor = SlinkyColor.Red;
+        private ItemColor _selectedColor = ItemColor.Red;
         private float _cellSize = 40.0f;
         private float _buttonWidth = 40.0f;
 
@@ -41,7 +42,7 @@ namespace GreatGames.CaseLib.EditorTools
         private void DrawColorSelection()
         {
             EditorGUILayout.LabelField("Select Slinky Color", EditorStyles.boldLabel);
-            _selectedColor = (SlinkyColor)EditorGUILayout.EnumPopup("Slinky Color", _selectedColor);
+            _selectedColor = (ItemColor)EditorGUILayout.EnumPopup("Slinky Color", _selectedColor);
             GUILayout.Space(10);
         }
 

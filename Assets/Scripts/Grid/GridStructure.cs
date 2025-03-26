@@ -4,7 +4,6 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
@@ -19,6 +18,7 @@ namespace GreatGames.CaseLib.Grid
         private Queue<GameKey> _emptySlots = new();
         private Dictionary<GameKey, GameObject> _slotObjects = new(); 
 
+        public  Vector2Int Size=>_size;
         private Vector2Int _size;
 
         private bool _isUpperGrid;
@@ -63,21 +63,22 @@ namespace GreatGames.CaseLib.Grid
             }
         }
 
-        public void SetSlotOccupied(GameKey key, SlinkyController slinky)
+        public void SetSlotOccupied(GameKey key, ISlotItem item)
         {
             if (!_slots.ContainsKey(key)) return;
 
             _slots[key].SetOccupied(true);
-            _slots[key].SetSlinky(slinky);
+            _slots[key].SetItem(item);
 
             OnGridUpdated.Emit();
         }
+
         public void ClearSlot(GameKey key)
         {
             if (!_slots.ContainsKey(key)) return;
 
             _slots[key].SetOccupied(false);
-            _slots[key].RemoveSlinky();
+            _slots[key].RemoveItem();
 
             if (!_emptySlots.Contains(key))
             {
@@ -86,8 +87,6 @@ namespace GreatGames.CaseLib.Grid
 
             OnGridUpdated.Emit();
         }
-
-
 
         public bool IsSlotEmpty(GameKey key)
         {
@@ -103,6 +102,20 @@ namespace GreatGames.CaseLib.Grid
             }
             return true;
         }
+        public bool TryPlaceItem<T>(GameKey key, T item) where T : ISlotItem
+        {
+            if (!_slots.TryGetValue(key, out var container)) return false;
+            if (container.IsOccupied) return false;
+
+            container.SetOccupied(true);
+            container.SetItem(item);
+
+            item.OccupiedGridKeys.Clear();
+            item.OccupiedGridKeys.Add(key);
+
+            return true;
+        }
+
 
         public GameObject GetSlotObject(GameKey key)
         {
@@ -142,21 +155,6 @@ namespace GreatGames.CaseLib.Grid
             return _slots;
         }
 
-        public void RemoveSlinky(GameKey key)
-        {
-            if (_slots.TryGetValue(key, out GridDataContainer slot))
-            {
-                slot.RemoveSlinky();
-            }
-        }
 
-        public void PlaceSlinky(SlinkyController slinky, GameKey key)
-        {
-            if (_slots.ContainsKey(key))
-            {
-                _slots[key].SetSlinky(slinky);
-                _slots[key].SetOccupied(true);
-            }
-        }
     }
 }

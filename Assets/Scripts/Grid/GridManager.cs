@@ -9,453 +9,199 @@ using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
 {
-    public class GridManager : FoundationSingleton<GridManager>, IFoundationSingleton, IInitializable
+    public partial class GridManager : FoundationSingleton<GridManager>, IFoundationSingleton, IInitializable
     {
-        [Header("Grid Configurations")]
-        [SerializeField] private GameObject _gridPrefab;
-        [SerializeField] private SlinkyController _slinkyPrefab;
+        private LowerGridSlotHandler _slotHandler;
+        public BasicSignal OnGridUpdated { get; private set; } = new BasicSignal();
 
-        [Header("Grid Offsets")]
-        [SerializeField] private Vector3 _slinkyGridOffset = new Vector3(0, 0, 0);
-        [SerializeField] private Vector3 _mergeGridOffset = new Vector3(0, -1, 0);
-
-        private Transform _gridParent;
-        private Transform _slinkyParent;
-
+        private GridBuilder _gridBuilder;
         private GridStructure _upperGrid;
         private GridStructure _lowerGrid;
 
-        public BasicSignal OnGridUpdated { get; private set; }
+        [SerializeField] private GameObject _gridPrefab;
+
+        public LevelConfigSO LevelData => _levelData;
+        [SerializeField] private LevelConfigSO _levelData;
+
+        public GridStructure LowerGrid => _lowerGrid;
+        public GridStructure UpperGrid => _upperGrid;
+
+        private readonly List<ISlotItem> _slotItems = new();
+        public IReadOnlyList<ISlotItem> AllSlotItems => _slotItems;
+
         public bool Initialized { get; set; }
 
-        private LevelConfigSO _levelData;
-
-        private List<SlinkyController> _slinkies = new List<SlinkyController>();
-
+        [SerializeField] private Vector3 _upperGridOffset = new Vector3(0, 0, 0);
+        [SerializeField] private Vector3 _lowerGridOffset = new Vector3(0, -1.5f, 0);
 
 
-        private void OnEnable()
+        private void Awake()
         {
-            OnGridUpdated = new BasicSignal();
+            _slotHandler = new LowerGridSlotHandler(_lowerGrid);
         }
 
         public void InitializeGrids(LevelConfigSO levelData, Transform levelParent)
         {
             _levelData = levelData;
+            _gridBuilder = new GridBuilder();
 
-            if (_levelData == null)
-            {
-                return;
-            }
-
-            if (_gridParent == null)
-            {
-                _gridParent = new GameObject("Grids Parent").transform;
-                _gridParent.SetParent(levelParent);
-            }
-
-            if (_slinkyParent == null)
-            {
-                _slinkyParent = new GameObject("Slinkies Parent").transform;
-                _slinkyParent.SetParent(levelParent);
-            }
-
-            if (_upperGrid == null)
-            {
-                _upperGrid = new GridStructure(_levelData.UpperGridSize, _slinkyGridOffset, _gridPrefab, true);
-            }
-
-            if (_lowerGrid == null)
-            {
-                _lowerGrid = new GridStructure(_levelData.LowerGridSize, _mergeGridOffset, _gridPrefab, false);
-            }
-            Vector3 upperOffset = _slinkyGridOffset;
-            Vector3 lowerOffset = _mergeGridOffset;
-
-            AlignGridOffsets(_levelData.UpperGridSize, _levelData.LowerGridSize, ref upperOffset, ref lowerOffset);
-
-            _upperGrid = new GridStructure(_levelData.UpperGridSize, upperOffset, _gridPrefab, true);
-            _lowerGrid = new GridStructure(_levelData.LowerGridSize, lowerOffset, _gridPrefab, false);
-
-            _upperGrid.InitializeGrid(_levelData.UpperGridSize, _gridParent);
-            _lowerGrid.InitializeGrid(_levelData.LowerGridSize, _gridParent);
+            (_upperGrid, _lowerGrid) = _gridBuilder.Build(levelData, _gridPrefab, levelParent, _upperGridOffset, _lowerGridOffset);
+            _slotHandler = new LowerGridSlotHandler(_lowerGrid);
 
             OnGridUpdated?.Emit();
-
-            SpawnSlinkies();
         }
 
-        private void SpawnSlinkies()
+
+        public bool IsLowerGridFull()
         {
-            if (_levelData == null || _slinkyPrefab == null)
-            {
-                return;
-            }
-
-            foreach (var slinkyData in _levelData.Slinkies)
-            {
-                GridStructure startGrid = _upperGrid;
-                GridStructure endGrid = _upperGrid;
-
-                GameKey startKey = new GameKey($"U_{slinkyData.StartSlot % _levelData.UpperGridSize.x},{slinkyData.StartSlot / _levelData.UpperGridSize.x}");
-                GameKey endKey = new GameKey($"U_{slinkyData.EndSlot % _levelData.UpperGridSize.x},{slinkyData.EndSlot / _levelData.UpperGridSize.x}");
-
-                Vector3 startPos = startGrid.GetWorldPosition(startKey);
-                Vector3 endPos = endGrid.GetWorldPosition(endKey);
-
-                GameObject startSlotObject = startGrid.GetSlotObject(startKey);
-                GameObject endSlotObject = endGrid.GetSlotObject(endKey);
-
-                GameObject slinkyContainer = new GameObject($"Slinky_{startKey.ValueAsString}");
-                slinkyContainer.transform.SetParent(_slinkyParent);
-                slinkyContainer.transform.position = startPos;
-
-                SlinkyController slinky = Instantiate(_slinkyPrefab, startPos, Quaternion.identity);
-                slinky.transform.SetParent(slinkyContainer.transform);
-                slinky.Initialize(startPos, endPos, this, slinkyData.Color, startSlotObject, endSlotObject, slinkyContainer.transform);
-                startGrid.SetSlotOccupied(startKey, slinky);
-                endGrid.SetSlotOccupied(endKey, slinky);
-            }
-        }
-
-        public bool TryPlaceSlinky(GameKey slotKey, SlinkyController movingSlinky, bool isUpperGrid)
-        {
-            GridStructure targetGrid = isUpperGrid ? _upperGrid : _lowerGrid;
-
-            if (targetGrid.TryGetContainer(slotKey, out GridDataContainer slot) && !slot.IsOccupied)
-            {
-                targetGrid.SetSlotOccupied(slotKey, movingSlinky);
-
-                if (movingSlinky != null)
-                {
-                    movingSlinky.OccupiedGridKeys.Clear();
-                    movingSlinky.OccupiedGridKeys.Add(slotKey);
-                }
-                else
-                {
-                   // debug;
-                }
-
-                OnGridUpdated?.Emit();
-             //  DebugLowerGridColors();
-                return true;
-            }
-            return false;
-        }
-
-        public void RegisterSlinky(SlinkyController slinky)
-        {
-            _slinkies.Add(slinky);
-        }
-        public void RemoveSlinky(SlinkyController slinky)
-        {
-            if (slinky == null)
-            {
-                return;
-            }
-
-            if (slinky.OccupiedGridKeys.Count > 0)
-            {
-                foreach (var key in slinky.OccupiedGridKeys)
-                {
-                    if (_lowerGrid.TryGetContainer(key, out var slot))
-                    {
-                        slot.RemoveSlinky(); 
-                    }
-                }
-            }
-
-            slinky.SlotIndex = null;
-            _slinkies.Remove(slinky);
-        }
-
-        public void RemoveSlinkyAt(GameKey key)
-        {
-            GridDataContainer container = null;
-
-            if (key.IsLower())
-                _lowerGrid.TryGetContainer(key, out container);
-            else
-                _upperGrid.TryGetContainer(key, out container);
-
-            if (container != null && container.HasSlinky)
-            {
-                var slinky = container.Slinky; 
-                container.Slinky.OccupiedGridKeys.Clear();
-                if (key.IsLower())
-                    _lowerGrid.ClearSlot(key);
-                else
-                    _upperGrid.ClearSlot(key);
-
-                if (slinky != null)
-                {
-                    RemoveSlinky(slinky); 
-                }
-            }
-        }
-
-        public Vector3 GetSlotPosition(GameKey key, bool isUpperGrid)
-        {
-            return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
-        }
-        public GameKey GetFirstColorEmptySlotOrNextToMatch(SlinkyController slinky)
-        {
-            var slots = _lowerGrid.GetAllSlots()
-                .OrderBy(kvp => kvp.Key.ToVector2Int().x) 
-                .ToList();
-
-            for (int i = 0; i < slots.Count; i++)
-            {
-                var currentSlot = slots[i];
-                if (!currentSlot.Value.HasSlinky) continue;
-
-                var existingSlinky = currentSlot.Value.Slinky;
-                if (existingSlinky != null && existingSlinky.SlinkyColor == slinky.SlinkyColor)
-                {
-                    int leftIndex = i - 1;
-                    if (leftIndex >= 0)
-                    {
-                        return slots[leftIndex].Key; 
-                    }
-                    else
-                    {
-                        return currentSlot.Key;
-                    }
-                }
-            }
-
-            return GetFirstEmptySlot(false);
-        }
-        public GameKey GetFirstEmptySlot(bool isUpperGrid)
-        {
-            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
-
-            return grid.GetAllSlots()
-                .Where(kvp => !kvp.Value.IsOccupied)
-                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x)
-                .Select(kvp => kvp.Key)
-                .FirstOrDefault();
-        }
-        public List<GameKey> GetEmptySlots(bool isUpperGrid)
-        {
-            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
-            return grid.GetAllSlots()
-                .Where(kvp => !kvp.Value.IsOccupied) 
-                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
-                .Select(kvp => kvp.Key) 
-                .ToList(); 
-        }
-        public bool IsThereLongerSlinkyBlocking(SlinkyController slinky)
-        {
-            foreach (var segment in slinky.Segments)
-            {
-                Vector3 startPos = segment.position;
-                Vector3 direction = Vector3.up;  
-                direction.Normalize();
-
-                float distance = 5f;
-
-                RaycastHit[] hits = Physics.RaycastAll(startPos, direction, distance);
-                foreach (var hit in hits)
-                {
-                    SlinkyController collidingSlinky = hit.collider.GetComponentInParent<SlinkyController>();
-
-                    if (collidingSlinky == null || collidingSlinky == slinky) continue;
-
-                    return true;
-                }
-            }
-            return false;
-        }
-        public void ShiftRemainingSlinkies()
-        {
-            List<GameKey> emptySlots = GetEmptySlots(false)
-                .OrderByDescending(slot => slot.ToVector2Int().x) 
-                .ToList();
-
-            List<SlinkyController> lowerGrids = GetAllSlinkiesInLowerGrid()
-                .OrderByDescending(slinky => slinky.OccupiedGridKeys[0].ToVector2Int().x) 
-                .ToList();
-
-            int slotIndex = 0;
-
-            foreach (var slinky in lowerGrids)
-            {
-                if (slotIndex >= emptySlots.Count) break;
-
-                GameKey currentSlot = slinky.OccupiedGridKeys[0];
-                int currentX = currentSlot.ToVector2Int().x;
-
-                GameKey targetSlot = emptySlots[slotIndex];
-                int targetX = targetSlot.ToVector2Int().x;
-
-                if (currentX >= targetX)
-                {
-                    continue; 
-                }
-
-                Vector3 targetPosition = GetSlotPosition(targetSlot, false);
-
-                if (slinky.OccupiedGridKeys.Contains(targetSlot))
-                {
-                    continue; 
-                }
-
-                _upperGrid.RemoveSlinky(slinky.OccupiedGridKeys[0]);
-                _lowerGrid.ClearSlot(currentSlot);
-                _lowerGrid.PlaceSlinky(slinky, targetSlot);
-
-                slinky.OccupiedGridKeys.Clear();
-                slinky.OccupiedGridKeys.Add(targetSlot);
-
-                slinky.MoveToTarget(targetPosition, targetSlot);
-              
-                slotIndex++;
-            }
-        }
-        public bool IsSlotOccupied(GameKey key)
-        {
-            if (key == null)
-            {
-                return false;
-            }
-
-            if (_lowerGrid.TryGetContainer(key, out var container))
-            {
-                return container.IsOccupied;
-            }
-
-            return false;
+            return _lowerGrid.GetAllSlots().All(slot => slot.Value.IsOccupied);
         }
 
         public GameKey GetGridKeyFromPosition(Vector3 position)
         {
             foreach (var kvp in _upperGrid.GetAllSlots())
             {
-                float distance = Vector3.Distance(kvp.Value.Position, position);
-
-                if (distance < 0.1f)
-                {
+                if (Vector3.Distance(kvp.Value.Position, position) < 0.1f)
                     return kvp.Key;
-                }
             }
 
             foreach (var kvp in _lowerGrid.GetAllSlots())
             {
-                float distance = Vector3.Distance(kvp.Value.Position, position);
-
-                if (distance < 0.1f)
-                {
+                if (Vector3.Distance(kvp.Value.Position, position) < 0.1f)
                     return kvp.Key;
-                }
             }
+
             return null;
         }
-        public List<SlinkyController> GetAllSlinkiesInLowerGrid()
+
+        public GameKey GetFirstColorEmptySlotOrNextToMatch(ISlotItem item)
         {
-            return _slinkies.Where(slinky =>
-                slinky.OccupiedGridKeys.Count > 0 &&
-                slinky.OccupiedGridKeys.All(key => key.IsLower())
-            ).ToList();
+                return _slotHandler.GetBestSlotFor(item);
+
         }
-        public  void AlignGridOffsets(
-            Vector2Int upperSize, Vector2Int lowerSize,
-            ref Vector3 upperOffset, ref Vector3 lowerOffset)
-        {
-            int upperWidth = upperSize.x;
-            int lowerWidth = lowerSize.x;
 
-            if (lowerWidth > upperWidth)
-            {
-                float diff = (lowerWidth - upperWidth) / 2f;
-                upperOffset.x += diff;
-            }
-            else if (upperWidth > lowerWidth)
-            {
-                float diff = (upperWidth - lowerWidth) / 2f;
-                lowerOffset.x += diff;
-            }
+
+
+        public Vector3 GetSlotPosition(GameKey key, bool isUpperGrid)
+        {
+            return isUpperGrid ? _upperGrid.GetWorldPosition(key) : _lowerGrid.GetWorldPosition(key);
         }
-        public bool ShiftUntilFit(GameKey targetKey)
+
+        public bool IsSlotOccupied(GameKey key)
         {
-            var slots = _lowerGrid.GetAllSlots()
-                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x) 
-                .ToList();
+            if (key == null) return false;
 
-            int index = slots.FindIndex(kvp => kvp.Key == targetKey);
-            if (index == -1)
-            {
-                return false;
-            }
-            int rightmostFreeIndex = -1;
-            for (int i = index + 1; i < slots.Count; i++)
-            {
+            if (key.IsUpper())
+                return _upperGrid.TryGetContainer(key, out var slot) && slot.IsOccupied;
 
-                if (!slots[i].Value.IsOccupied)
+            return _lowerGrid.TryGetContainer(key, out var slot2) && slot2.IsOccupied;
+        }
+
+        public void RemoveItemAt(GameKey key)
+        {
+            if (key.IsLower())
+            {
+                if (_lowerGrid.TryGetContainer(key, out var slot) && slot.HasItem)
                 {
-                    rightmostFreeIndex = i;
-                    break;
+                    slot.RemoveItem();
                 }
             }
-
-            if (rightmostFreeIndex == -1)
+            else if (key.IsUpper())
             {
-                return false;
-            }
-
-            for (int i = rightmostFreeIndex; i > index; i--)
-            {
-                var fromSlot = slots[i - 1];
-                var toSlot = slots[i];
-
-                var slinky = fromSlot.Value.Slinky;
-                if (slinky == null)
+                if (_upperGrid.TryGetContainer(key, out var slot) && slot.HasItem)
                 {
+                    slot.RemoveItem();
+                }
+            }
+        }
+
+        public GameKey GetFirstEmptySlot(bool isUpperGrid)
+        {
+            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
+            return grid.GetAllSlots()
+                       .Where(s => !s.Value.IsOccupied)
+                       .OrderByDescending(s => s.Key.ToVector2Int().x)
+                       .Select(s => s.Key)
+                       .FirstOrDefault();
+        }
+
+        public bool TryPlaceItem<T>(GameKey key, T item, bool isUpperGrid) where T : ISlotItem
+        {
+            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
+            return grid.TryPlaceItem(key, item);
+        }
+        public void RemoveItem(ISlotItem item)
+        {
+            _slotItems.Remove(item);
+        }
+
+        public void RegisterItem(ISlotItem item)
+        {
+            if (!_slotItems.Contains(item))
+                _slotItems.Add(item);
+        }
+        public List<ISlotItem> GetAllItemsInLowerGrid()
+        {
+            List<ISlotItem> toRemove = new();
+            foreach (var slotItem in _slotItems)
+            {
+                if (slotItem.OccupiedGridKeys.Count == 0)
+                {
+                    toRemove.Add(slotItem);
                     continue;
                 }
 
-                Vector3 targetPos = GetSlotPosition(toSlot.Key, false);
-
-                _lowerGrid.ClearSlot(fromSlot.Key);
-                _lowerGrid.PlaceSlinky(slinky, toSlot.Key);
-
-                slinky.OccupiedGridKeys.Clear();
-                slinky.OccupiedGridKeys.Add(toSlot.Key);
-                slinky.MoveToTarget(targetPos, toSlot.Key);
+                foreach (var key in slotItem.OccupiedGridKeys)
+                {
+                    if (!key.IsLower())
+                    {
+                        toRemove.Add(slotItem);
+                        break;
+                    }
+                }
             }
-            return true;
-        }
-        public List<SlinkyController> GetAllSlinkies()
-        {
-            return _slinkies;
-        }
-        public bool IsLowerGridFull()
-        {
-            return GetEmptySlots(false).Count == 0;
-        }
-        public void DebugLowerGridColors()
-        {
-            var allSlots = _lowerGrid.GetAllSlots();
-            Dictionary<GameKey, string> colorMap = new Dictionary<GameKey, string>();
 
-            foreach (var kvp in allSlots)
+            foreach (var invalid in toRemove)
             {
-                var slinky = _slinkies.FirstOrDefault(s => s.OccupiedGridKeys.Contains(kvp.Key));
-                string slinkyColor = (slinky != null) ? slinky.SlinkyColor.ToString() : "unKnown";
-                string slotStatus = (slinky != null) ? "Full" : "Empty";
-
-                colorMap[kvp.Key] = $"{slinkyColor} - {slotStatus}";
+                RemoveItem(invalid);
             }
+
+            return _slotItems.Where(s =>
+                s.OccupiedGridKeys.Count > 0 &&
+                s.OccupiedGridKeys.TrueForAll(k => k.IsLower())).ToList();
         }
-        public void LogLowerGridSlotStates()
+        public void UpdateItemSlot(ISlotItem item, GameKey newKey)
         {
-
-            foreach (var kvp in _lowerGrid.GetAllSlots().OrderBy(k => k.Key.ToVector2Int().x))
+            foreach (var key in item.OccupiedGridKeys)
             {
-                string status = kvp.Value.IsOccupied ? "IsOccupied" : "Empty";
-                Debug.Log($"{kvp.Key.ValueAsString} : {status}");
+                if (key.IsLower())
+                    _lowerGrid.ClearSlot(key);
+                else
+                    _upperGrid.ClearSlot(key);
             }
+            item.OccupiedGridKeys.Clear();
+            item.OccupiedGridKeys.Add(newKey);
+
+            if (newKey.IsLower())
+                _lowerGrid.SetSlotOccupied(newKey, item);
+            else
+                _upperGrid.SetSlotOccupied(newKey, item);
+
+            OnGridUpdated?.Emit();
         }
+        public void ClearAll()
+        {
+            foreach (var item in _slotItems)
+            {
+                if (item.Root != null)
+                Destroy(item.Root);
+            }
+            _slotItems.Clear();
+        }
+        public List<ISlotItem> GetAllItems()
+        {
+            return _slotItems;
+        }
+
     }
-
 }

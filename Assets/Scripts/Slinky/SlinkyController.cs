@@ -6,11 +6,10 @@ using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 namespace GreatGames.CaseLib.Slinky
 {
-    public class SlinkyController : MonoBehaviour, IInitializable
+    public class SlinkyController : MonoBehaviour, IInitializable, ISlotItem
     {
         [Header("Segment & Physics Settings")]
         [SerializeField] private GameObject _segmentPrefab;
@@ -22,10 +21,19 @@ namespace GreatGames.CaseLib.Slinky
 
         [Header("Movement Settings")]
         [SerializeField] private float _moveDuration = 0.5f;
+        public float MoveDurationValue => _moveDuration;
+
+        [SerializeField] private float _shiftingDuration = 0.2f;
+        public float ShiftingDuration => _shiftingDuration;
+
+        public Ease MovementEase => _movementEase;
         [SerializeField] private Ease _movementEase = Ease.OutElastic;
-        [SerializeField] private float delayBetweenSegments = 0.02f; 
-        [SerializeField] private float arcHeight = 1.5f; 
-        [SerializeField] private float moveTimeMultiplier = 1.5f; 
+        public float DelayBetweenSegments => delayBetweenSegments;
+        [SerializeField] private float delayBetweenSegments = 0.02f;
+        public float ArcHeight => arcHeight;
+        [SerializeField] private float arcHeight = 1.5f;
+        public float MoveTimeMultiplierValue => moveTimeMultiplier;
+        [SerializeField] private float moveTimeMultiplier = 1.5f;
 
         private Transform _slinkyParent;
 
@@ -37,8 +45,7 @@ namespace GreatGames.CaseLib.Slinky
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
         private GridManager _gridManager;
-        public SlinkyColor SlinkyColor => _slinkyColor;
-        private SlinkyColor _slinkyColor;
+       
         public bool Initialized { get; set; }
 
         private GameObject _startSlotObject;
@@ -54,6 +61,17 @@ namespace GreatGames.CaseLib.Slinky
         public int SegmentCount => _segments.Count;
         public List<GameKey> OccupiedGridKeys { get; private set; } = new List<GameKey>();
 
+        private SlinkyMover _slinkyMover;
+
+        public GameObject Root => gameObject;
+
+        private ItemColor _itemColor;
+        public ItemColor ItemColor
+        {
+            get => _itemColor;
+            set => _itemColor = value;
+        }
+
         private void Awake()
         {
             Init();
@@ -66,11 +84,11 @@ namespace GreatGames.CaseLib.Slinky
             _gridManager = GridManager.Instance;
         }
 
-        public void Initialize(Vector3 startPos, Vector3 endPos, GridManager gridManager, SlinkyColor color, GameObject startSlot, GameObject endSlot, Transform slinkyParent)
+        public void Initialize(Vector3 startPos, Vector3 endPos, GridManager gridManager, ItemColor color, GameObject startSlot, GameObject endSlot, Transform slinkyParent)
         {
             _startSlotObject = startSlot;
             _endSlotObject = endSlot;
-            _slinkyColor = color;
+            _itemColor = color;
             _slinkyParent = slinkyParent;
             _segments.Clear();
             _gridManager = gridManager;
@@ -83,7 +101,7 @@ namespace GreatGames.CaseLib.Slinky
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(startPos));
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(endPos));
             CreateSegments(startPos, endPos, transform);
-            _gridManager.RegisterSlinky(this);
+           
         }
 
         private void CreateSegments(Vector3 startPos, Vector3 endPos, Transform parent)
@@ -113,7 +131,7 @@ namespace GreatGames.CaseLib.Slinky
                 Renderer renderer = segment.GetComponentInChildren<Renderer>();
                 if (renderer != null)
                 {
-                    renderer.material.color = SlinkyColorUtility.GetColor(_slinkyColor);
+                    renderer.material.color = SlinkyColorUtility.GetColor(_itemColor);
                 }
 
                 Rigidbody rb = segment.AddComponent<Rigidbody>();
@@ -138,6 +156,8 @@ namespace GreatGames.CaseLib.Slinky
             HingeJoint lastHinge = _segments[_segments.Count - 1].gameObject.AddComponent<HingeJoint>();
             lastHinge.connectedBody = _endSlotObject.GetComponent<Rigidbody>();
         }
+        public void SetIsMoving(bool value) => _isMoving = value;
+
         public void DestroySegments()
         {
             foreach (var segment in Segments)
@@ -156,98 +176,54 @@ namespace GreatGames.CaseLib.Slinky
             {
                 return;
             }
-
+            if (IsThereLongerSlinkyBlocking(this))
+            {
+                return;
+            }
             GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
 
             if (emptySlotKey == null)
             {
                 return;
             }
-
             Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
-
-            if (_gridManager.IsThereLongerSlinkyBlocking(this))
-            {
-                return;
-            }
             if (_gridManager.IsSlotOccupied(emptySlotKey))
             {
-                bool shiftSuccess = _gridManager.ShiftUntilFit(emptySlotKey);
+                bool shiftSuccess = _slinkyMover.ShiftUntilFit(emptySlotKey,this);
                 if (!shiftSuccess)
                 {
-                    // game end 
                     return;
                 }
             }
             _isSelected = true;
-            MoveToTarget(targetPosition, emptySlotKey);
+            MoveTo(emptySlotKey);
         }
-        public void MoveToTarget(Vector3 targetPosition, GameKey newSlotKey)
+        public void MoveTo(GameKey targetKey)
         {
-            if (_isMoving) return;
-
-            float moveTime = _moveDuration * moveTimeMultiplier;
-
-            for (int i = 0; i < _segments.Count; i++)
-            {
-                int index = i;
-                float delay = i * delayBetweenSegments;
-
-                Vector3 startPos = _segments[index].position;
-                Vector3 midPoint = (startPos + targetPosition) / 2 + Vector3.up * arcHeight;
-
-                Tween moveTween = _segments[index].DOPath(new Vector3[] { midPoint, targetPosition }, moveTime, PathType.CatmullRom)
-                    .SetDelay(delay)
-                    .SetEase(_movementEase)
-                    .SetRelative(false);
-            }
-            DOVirtual.DelayedCall(moveTime + delayBetweenSegments * _segments.Count, () =>
-            {
-                _isMoving = false;
-                OnMovementComplete?.Emit();
-                _gridManager.ShiftRemainingSlinkies();
-                MatchManager.Instance.CheckForMatch();
-
-            });
-
-            if (IsMatch) return;
-            _isMoving = true;
-
-            if (newSlotKey == null)
-            {
-                GameKey emptySlotKey = _gridManager.GetFirstEmptySlot(false);
-                if (emptySlotKey == null)
-                {
-                    _isMoving = false;
-                    return;
-                }
-                newSlotKey = emptySlotKey;
-                targetPosition = _gridManager.GetSlotPosition(newSlotKey, false);
-            }
-
-            _gridManager.TryPlaceSlinky(newSlotKey, this, false);
-            SlotIndex = newSlotKey;
-            OccupiedGridKeys.Clear();
-            OccupiedGridKeys.Add(newSlotKey);
-
-            foreach (Transform segment in _segments)
-            {
-                HingeJoint hinge = segment.GetComponent<HingeJoint>();
-                if (hinge != null)
-                {
-                    hinge.connectedBody = null;
-                    Destroy(hinge);
-                }
-            }
-            foreach (Transform segment in _segments)
-            {
-                Rigidbody rb = segment.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    rb.isKinematic = true;
-                }
-            }
+            SlinkyMover.Move(this, targetKey);
         }
+        public bool IsThereLongerSlinkyBlocking(SlinkyController slinky)
+        {
+            foreach (var segment in slinky.Segments)
+            {
+                RaycastHit[] hits = Physics.RaycastAll(segment.position, Vector3.up, 5f);
+                foreach (var hit in hits)
+                {
+                    var other = hit.collider.GetComponentInParent<SlinkyController>();
+                    if (other != null && other != slinky)
+                        return true;
+                }
+            }
+            return false;
+        }
+        public bool MatchesWith(ISlotItem other)
+        {
+            if (other is SlinkyController otherSlinky)
+                return _itemColor == otherSlinky._itemColor;
+
+            return false;
+        }
+
         //void OnDrawGizmos()
         //{
         //    if (!Application.isPlaying) return;
@@ -278,6 +254,6 @@ namespace GreatGames.CaseLib.Slinky
 
         //        Gizmos.DrawLine(startPos, startPos + direction * distance);
         //    }
-       // }
+        // }
     }
 }

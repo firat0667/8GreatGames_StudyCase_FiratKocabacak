@@ -77,10 +77,15 @@ namespace GreatGames.CaseLib.Key
     {
         public static bool IsLower(this GameKey key) => key.ValueAsString.StartsWith("L_");
         public static bool IsUpper(this GameKey key) => key.ValueAsString.StartsWith("U_");
-        public static string GetPrefix(bool isUpper)
+
+        public static string GetPrefix(bool isUpper) => isUpper ? "U_" : "L_";
+
+        public static GameKey CreateFromIndex(int index, int gridWidth, bool isUpper)
         {
-            return isUpper ? "U_" : "L_";
+            int x = index % gridWidth;
+            int y = index / gridWidth;
+            string prefix = GetPrefix(isUpper);
+            return new GameKey($"{prefix}{x},{y}");
         }
     }
-
 }

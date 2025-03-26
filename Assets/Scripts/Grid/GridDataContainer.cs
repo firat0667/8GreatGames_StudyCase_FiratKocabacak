@@ -1,7 +1,5 @@
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Signals;
-using GreatGames.CaseLib.Slinky;
-using GreatGames.CaseLib.Utility;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Grid
@@ -13,10 +11,10 @@ namespace GreatGames.CaseLib.Grid
         public bool IsOccupied { get; private set; }
         public BasicSignal OnSlotStateChanged { get; private set; }
 
-        public SlinkyController Slinky { get; private set; }
+        public ISlotItem Item { get; private set; }
+        public bool HasItem => Item != null; 
 
-        public bool HasSlinky => Slinky != null;
-
+        public object Value { get; set; }
         public GridDataContainer(int index, Vector3 position)
         {
             Index = index;
@@ -25,86 +23,31 @@ namespace GreatGames.CaseLib.Grid
             OnSlotStateChanged = new BasicSignal();
         }
 
+        public void SetItem(ISlotItem item)
+        {
+            Item = item;
+            IsOccupied = item != null;
+            OnSlotStateChanged?.Emit();
+        }
+
+        public void RemoveItem()
+        {
+            Item = null;
+            IsOccupied = false;
+            OnSlotStateChanged?.Emit();
+        }
+
         public void SetOccupied(bool status)
         {
-            if (IsOccupied == status) return; 
-
+            if (IsOccupied == status) return;
             IsOccupied = status;
-            OnSlotStateChanged?.Emit(); 
-        }
-        public void Clear()
-        {
-            Slinky = null;
-            IsOccupied = false;
             OnSlotStateChanged?.Emit();
         }
-
-        public void CopyFrom(GridDataContainer other)
+        public bool TryGetItem(out ISlotItem item)
         {
-            if (other == null || (Index == other.Index && Position == other.Position && IsOccupied == other.IsOccupied))
-                return; 
-
-            Index = other.Index;
-            Position = other.Position;
-            IsOccupied = other.IsOccupied;
-        }
-        public void SetSlinky(SlinkyController slinky)
-        {
-            Slinky = slinky;
-            IsOccupied = slinky != null;
-            OnSlotStateChanged?.Emit();
+            item = Item;
+            return item != null;
         }
 
-        public void RemoveSlinky()
-        {
-            Slinky = null;
-            IsOccupied = false;
-            OnSlotStateChanged?.Emit();
-        }
-        public object Value
-        {
-            get => this;
-            set
-            {
-                if (value is GridDataContainer data)
-                    CopyFrom(data);
-            }
-        }
-    }
-
-    [System.Serializable]
-    public class SlinkyData : IContainer
-    {
-        public int StartSlot;
-        public int EndSlot;
-        public SlinkyColor Color;
-
-        public SlinkyData(int startSlot, int endSlot, SlinkyColor color)
-        {
-            StartSlot = startSlot;
-            EndSlot = endSlot;
-            Color = color;
-        }
-
-        public void CopyFrom(SlinkyData other)
-        {
-            if (other == null || (StartSlot == other.StartSlot && EndSlot == other.EndSlot && Color == other.Color))
-                return;
-
-        }
-        public object Value
-        {
-            get => this;
-            set
-            {
-                if (value is SlinkyData data)
-                    CopyFrom(data);
-            }
-        }
-    }
-    public enum GridType
-    {
-        Upper,
-        Lower
     }
 }

@@ -51,6 +51,7 @@ MonoBehaviour:
   springForce: 1200
   dampingFactor: 250
   _moveDuration: 0.3
+  _shiftingDuration: 0.1
   _movementEase: 7
   delayBetweenSegments: 0.01
   arcHeight: 1.5

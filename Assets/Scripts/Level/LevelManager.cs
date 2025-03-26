@@ -1,5 +1,6 @@
 ﻿using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Level;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.UI;
@@ -77,6 +78,8 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
 
         GridManager.Instance.InitializeGrids(currentLevel, levelInstance.transform);
+        SlinkyManager.Instance.SpawnSlinkies(currentLevel.Slinkies);
+
         _mainCamera.AdjustCameraByLevelData(currentLevel);
         OnLevelLoaded.Emit();
     }

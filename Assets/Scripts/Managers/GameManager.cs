@@ -22,18 +22,18 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
     public void CheckGameState()
     {
         bool isFull = GridManager.Instance.IsLowerGridFull();
-        bool hasMatch = MatchManager.Instance.CheckAnyAvailableMatch();
+      //  bool hasMatch = MatchManager.Instance.CheckAnyAvailableMatch();
 
-        if (isFull && !hasMatch)
-        {
-           Instance.TriggerLevelFailed();
-        }
+        //if (isFull && !hasMatch)
+        //{
+        //   Instance.TriggerLevelFailed();
+        //}
     }
     public void CheckForCompletion()
     {
         if (_levelCompleted) return;
 
-        bool allSlinkiesCleared = GridManager.Instance.GetAllSlinkies().Count == 0;
+        bool allSlinkiesCleared = GridManager.Instance.GetAllItems().Count == 0;
         if (allSlinkiesCleared)
         {
             VFXManager.Instance.PlayLevelDoneParticle();

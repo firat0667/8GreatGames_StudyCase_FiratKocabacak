@@ -5,16 +5,16 @@ namespace GreatGames.CaseLib.Utility
 {
     public static class SlinkyColorUtility
     {
-        private static readonly Dictionary<SlinkyColor, Color> _colorMap = new()
+        private static readonly Dictionary<ItemColor, Color> _colorMap = new()
         {
-            { SlinkyColor.Red, Color.red },
-            { SlinkyColor.Blue, Color.blue },
-            { SlinkyColor.Green, Color.green },
-            { SlinkyColor.Pink, new Color(1f, 0.41f, 0.71f) },
-            { SlinkyColor.Orange, new Color(1f, 0.5f, 0f) }
+            { ItemColor.Red, Color.red },
+            { ItemColor.Blue, Color.blue },
+            { ItemColor.Green, Color.green },
+            { ItemColor.Pink, new Color(1f, 0.41f, 0.71f) },
+            { ItemColor.Orange, new Color(1f, 0.5f, 0f) }
         };
 
-        private static readonly Dictionary<Color, SlinkyColor> _reverseColorMap = new();
+        private static readonly Dictionary<Color, ItemColor> _reverseColorMap = new();
 
         static SlinkyColorUtility()
         {
@@ -24,28 +24,28 @@ namespace GreatGames.CaseLib.Utility
             }
         }
 
-        public static bool TryGetColor(SlinkyColor color, out Color result)
+        public static bool TryGetColor(ItemColor color, out Color result)
         {
             return _colorMap.TryGetValue(color, out result);
         }
 
-        public static Color GetColor(SlinkyColor color)
+        public static Color GetColor(ItemColor color)
         {
             return _colorMap.ContainsKey(color) ? _colorMap[color] : Color.white;
         }
 
-        public static bool TryGetSlinkyColorEnum(Color color, out SlinkyColor slinkyColor)
+        public static bool TryGetSlinkyColorEnum(Color color, out ItemColor slinkyColor)
         {
             return _reverseColorMap.TryGetValue(color, out slinkyColor);
         }
 
-        public static SlinkyColor GetSlinkyColorEnum(Color color)
+        public static ItemColor GetSlinkyColorEnum(Color color)
         {
-            return _reverseColorMap.TryGetValue(color, out var slinkyColor) ? slinkyColor : SlinkyColor.Red;
+            return _reverseColorMap.TryGetValue(color, out var slinkyColor) ? slinkyColor : ItemColor.Red;
         }
     }
 
-    public enum SlinkyColor
+    public enum ItemColor
     {
         Red,
         Blue,
