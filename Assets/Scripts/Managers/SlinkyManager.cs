@@ -3,6 +3,7 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Managers
@@ -45,8 +46,8 @@ namespace GreatGames.CaseLib.Managers
 
                 slinky.Initialize(startPos, endPos, _gridManager, data.Color, startSlotObject, endSlotObject, container.transform);
 
-                startGrid.SetSlotOccupied(startKey, slinky);
-                startGrid.SetSlotOccupied(endKey, slinky);
+                startGrid.PlaceItem(startKey, slinky);
+                startGrid.PlaceItem(endKey, slinky);
 
                 _gridManager.RegisterItem(slinky);
             }
@@ -56,5 +57,17 @@ namespace GreatGames.CaseLib.Managers
         {
             return _gridManager.GetAllItemsInLowerGrid();
         }
+        public bool IsAnyItemMoving()
+        {
+            return GetSlinkiesInLowerGrid()
+                .OfType<SlinkyController>()
+                .Any(s => s.IsMoving);
+        }
+        public void ShiftAllSlinkies()
+        {
+            var mover = new SlinkyMover(GridManager.Instance.LowerGrid, GridManager.Instance);
+            mover.ShiftRemainingSlinkies();
+        }
+
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GreatGames.CaseLib.Utility
 {
-    public static class SlinkyColorUtility
+    public static class ItemColorUtility
     {
         private static readonly Dictionary<ItemColor, Color> _colorMap = new()
         {
@@ -16,7 +16,7 @@ namespace GreatGames.CaseLib.Utility
 
         private static readonly Dictionary<Color, ItemColor> _reverseColorMap = new();
 
-        static SlinkyColorUtility()
+        static ItemColorUtility()
         {
             foreach (var pair in _colorMap)
             {

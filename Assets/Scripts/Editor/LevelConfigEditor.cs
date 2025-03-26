@@ -59,7 +59,7 @@ namespace GreatGames.CaseLib.EditorTools
                     string slotLabel = $"{x},{y}";  
 
                     SlinkyData slinky = _levelConfig.Slinkies.Find(s => s.StartSlot == slotIndex || s.EndSlot == slotIndex);
-                    Color buttonColor = slinky != null ? SlinkyColorUtility.GetColor(slinky.Color) : Color.white;
+                    Color buttonColor = slinky != null ? ItemColorUtility.GetColor(slinky.Color) : Color.white;
 
                     GUI.backgroundColor = buttonColor;
                     if (isUpperGrid && GUILayout.Button(slotLabel, GUILayout.Width(_buttonWidth), GUILayout.Height(_cellSize)))

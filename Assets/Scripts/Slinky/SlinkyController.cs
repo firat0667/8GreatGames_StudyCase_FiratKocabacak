@@ -2,14 +2,16 @@
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Match;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace GreatGames.CaseLib.Slinky
 {
-    public class SlinkyController : MonoBehaviour, IInitializable, ISlotItem
+    public class SlinkyController : MonoBehaviour, IInitializable, ISlotItem, IMatchable
     {
         [Header("Segment & Physics Settings")]
         [SerializeField] private GameObject _segmentPrefab;
@@ -42,8 +44,10 @@ namespace GreatGames.CaseLib.Slinky
         public bool IsMoving=>_isMoving;
         private bool _isMoving = false;
         public bool IsMatch { get;  set; }
+
         private bool _isSelected = false;
         public BasicSignal OnMovementComplete { get; private set; }
+
         private GridManager _gridManager;
        
         public bool Initialized { get; set; }
@@ -63,6 +67,9 @@ namespace GreatGames.CaseLib.Slinky
 
         private SlinkyMover _slinkyMover;
 
+        // ReSharper disable once UnusedMember.Local
+        private bool _isTarget = false;
+
         public GameObject Root => gameObject;
 
         private ItemColor _itemColor;
@@ -71,6 +78,10 @@ namespace GreatGames.CaseLib.Slinky
             get => _itemColor;
             set => _itemColor = value;
         }
+
+        public bool IsMovable => throw new System.NotImplementedException();
+
+        public bool IsMarkedForMatch { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
         private void Awake()
         {
@@ -131,7 +142,7 @@ namespace GreatGames.CaseLib.Slinky
                 Renderer renderer = segment.GetComponentInChildren<Renderer>();
                 if (renderer != null)
                 {
-                    renderer.material.color = SlinkyColorUtility.GetColor(_itemColor);
+                    renderer.material.color = ItemColorUtility.GetColor(_itemColor);
                 }
 
                 Rigidbody rb = segment.AddComponent<Rigidbody>();
@@ -180,12 +191,13 @@ namespace GreatGames.CaseLib.Slinky
             {
                 return;
             }
-            GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
 
+            GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
             if (emptySlotKey == null)
             {
                 return;
             }
+
             Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
             if (_gridManager.IsSlotOccupied(emptySlotKey))
             {
@@ -224,6 +236,28 @@ namespace GreatGames.CaseLib.Slinky
             return false;
         }
 
+        public bool MatchesWith(IMatchable other)
+        {
+            return other != null && ItemColor == other.ItemColor;
+        }
+
+        public void OnMatchedAsTarget()
+        {
+            _isTarget = true;
+        }
+
+        public void OnMatchedAsMover(GameKey targetSlot)
+        {
+            MoveTo(targetSlot);
+        }
+        public void PlayMergeEffect()
+        {
+            VFXManager.Instance.PlayMergeParticle(transform.position);
+        }
+        public void RemoveFromGrid()
+        {
+            GridManager.Instance.RemoveItemAt(SlotIndex);
+        }
         //void OnDrawGizmos()
         //{
         //    if (!Application.isPlaying) return;

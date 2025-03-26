@@ -2,8 +2,8 @@
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Managers;
+using GreatGames.CaseLib.Match;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEditor.Progress;
 
@@ -55,10 +55,11 @@ namespace GreatGames.CaseLib.Slinky
             {
                 slinky.SetIsMoving(false);
                 slinky.OnMovementComplete?.Emit();
+              //  MatchManager.Instance.CheckForMatch();
                 var mover = new SlinkyMover(gridManager.LowerGrid, gridManager);
             });
             gridManager.UpdateItemSlot(slinky, targetKey);
-            gridManager.TryPlaceItem(targetKey, slinky, false);
+            gridManager.PlaceItem(targetKey, slinky, false);
 
 
             foreach (Transform segment in segments)
@@ -90,6 +91,8 @@ namespace GreatGames.CaseLib.Slinky
             }
             if (rightmostFreeIndex == -1) return false;
 
+            bool anyMoving = SlinkyManager.Instance.IsAnyItemMoving();
+
             for (int i = rightmostFreeIndex; i > index; i--)
             {
                 var from = slots[i - 1];
@@ -100,15 +103,23 @@ namespace GreatGames.CaseLib.Slinky
                 if (slinky == null || slinky == self) continue;
 
                 _grid.ClearSlot(from.Key);
-                _gridManager.TryPlaceItem(to.Key, slinky, false);
+                _gridManager.PlaceItem(to.Key, slinky, false);
                 slinky.OccupiedGridKeys.Clear();
                 slinky.OccupiedGridKeys.Add(to.Key);
 
-                Move(slinky, to.Key,null,true);
+                if (anyMoving)
+                {
+                    Teleport(slinky, to.Key);
+                }
+                else
+                {
+                    Move(slinky, to.Key, null, true);
+                }
             }
 
             return true;
         }
+
 
         public void ShiftRemainingSlinkies(SlinkyController initiator = null)
         {
@@ -131,7 +142,6 @@ namespace GreatGames.CaseLib.Slinky
             if (initiator != null)
                 slinkies.Remove(initiator);
 
-            bool anyShifted = false;
 
             foreach (var slinky in slinkies)
             {
@@ -144,11 +154,36 @@ namespace GreatGames.CaseLib.Slinky
 
                 if (targetSlot == null)
                     continue;
-
+                var currentSlot = slinky.SlotIndex;
+                _grid.ClearSlot(currentSlot);
+                _gridManager.PlaceItem(targetSlot, slinky, false);
                 Move(slinky, targetSlot);
                 emptySlots.Remove(targetSlot);
-                anyShifted = true;
             }
+        }
+        public static void Teleport(SlinkyController slinky, GameKey targetKey)
+        {
+            if (slinky == null || targetKey == null) return;
+
+            var gridManager = GridManager.Instance;
+            Vector3 targetPosition = gridManager.GetSlotPosition(targetKey, false);
+
+            foreach (var segment in slinky.Segments)
+            {
+                segment.position = targetPosition;
+
+                var hinge = segment.GetComponent<HingeJoint>();
+                if (hinge != null) Object.Destroy(hinge);
+
+                var rb = segment.GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = true;
+            }
+
+            slinky.SetIsMoving(false);
+            slinky.OnMovementComplete?.Emit();
+
+            gridManager.UpdateItemSlot(slinky, targetKey);
+            gridManager.PlaceItem(targetKey, slinky, false);
         }
 
     }

@@ -125,11 +125,12 @@ namespace GreatGames.CaseLib.Grid
                        .FirstOrDefault();
         }
 
-        public bool TryPlaceItem<T>(GameKey key, T item, bool isUpperGrid) where T : ISlotItem
+        public bool PlaceItem<T>(GameKey key, T item, bool isUpperGrid, bool force = false) where T : ISlotItem
         {
             var grid = isUpperGrid ? _upperGrid : _lowerGrid;
-            return grid.TryPlaceItem(key, item);
+            return grid.PlaceItem(key, item, force);
         }
+
         public void RemoveItem(ISlotItem item)
         {
             _slotItems.Remove(item);
@@ -183,9 +184,9 @@ namespace GreatGames.CaseLib.Grid
             item.OccupiedGridKeys.Add(newKey);
 
             if (newKey.IsLower())
-                _lowerGrid.SetSlotOccupied(newKey, item);
+                _lowerGrid.PlaceItem(newKey, item);
             else
-                _upperGrid.SetSlotOccupied(newKey, item);
+                _upperGrid.PlaceItem(newKey, item);
 
             OnGridUpdated?.Emit();
         }

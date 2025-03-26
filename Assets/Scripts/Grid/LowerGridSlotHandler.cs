@@ -25,7 +25,10 @@ public class LowerGridSlotHandler
             if (!currentSlot.Value.HasItem)
                 continue;
 
-            if (currentSlot.Value.TryGetItem(out var existingItem) && existingItem.MatchesWith(item))
+            if (currentSlot.Value.TryGetItem(out var existingItem) &&
+               existingItem is IMatchable matchableExisting &&
+               item is IMatchable matchableItem &&
+               matchableExisting.MatchesWith(matchableItem))
             {
                 int rightIndex = i - 1;
 

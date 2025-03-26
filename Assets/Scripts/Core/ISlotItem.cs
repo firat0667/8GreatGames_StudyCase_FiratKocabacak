@@ -8,9 +8,8 @@ public interface ISlotItem
 {
     List<GameKey> OccupiedGridKeys { get; }
     void MoveTo(GameKey key); 
-    bool MatchesWith(ISlotItem other);
     GameObject Root { get; }
-    GameKey SlotIndex { get;}
+    GameKey SlotIndex { get; set; }
     ItemColor ItemColor { get; set; }
 
 }

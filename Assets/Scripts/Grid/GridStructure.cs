@@ -63,15 +63,6 @@ namespace GreatGames.CaseLib.Grid
             }
         }
 
-        public void SetSlotOccupied(GameKey key, ISlotItem item)
-        {
-            if (!_slots.ContainsKey(key)) return;
-
-            _slots[key].SetOccupied(true);
-            _slots[key].SetItem(item);
-
-            OnGridUpdated.Emit();
-        }
 
         public void ClearSlot(GameKey key)
         {
@@ -102,19 +93,25 @@ namespace GreatGames.CaseLib.Grid
             }
             return true;
         }
-        public bool TryPlaceItem<T>(GameKey key, T item) where T : ISlotItem
+        public bool PlaceItem<T>(GameKey key, T item, bool force = false) where T : ISlotItem
         {
             if (!_slots.TryGetValue(key, out var container)) return false;
-            if (container.IsOccupied) return false;
+
+            if (!force && container.IsOccupied)
+                return false;
 
             container.SetOccupied(true);
             container.SetItem(item);
 
             item.OccupiedGridKeys.Clear();
             item.OccupiedGridKeys.Add(key);
+            item.SlotIndex = key;
+
+            OnGridUpdated.Emit(); 
 
             return true;
         }
+
 
 
         public GameObject GetSlotObject(GameKey key)
