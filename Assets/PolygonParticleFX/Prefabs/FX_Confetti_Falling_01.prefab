@@ -4932,4 +4932,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _type: 1
-  _turnPoolTime: 10
+  _turnPoolTime: 5

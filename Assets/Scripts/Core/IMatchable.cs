@@ -1,7 +1,8 @@
-using GreatGames.CaseLib.Key;
+﻿using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public interface IMatchable
 {
@@ -17,7 +18,7 @@ public interface IMatchRule
 {
     bool IsMatch(List<IMatchable> sequence);
 }
-public class ColorMatchRule : IMatchRule
+public class ColorMatchRule : IAdvancedMatchRule
 {
     private int _requiredCount;
 
@@ -55,6 +56,11 @@ public class ColorMatchRule : IMatchRule
 
         return result;
     }
+
+}
+public interface IAdvancedMatchRule : IMatchRule
+{
+    List<List<IMatchable>> GetMatches(List<IMatchable> sequence);
 }
 public static class MatchableExtensions
 {

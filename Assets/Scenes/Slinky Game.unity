@@ -1508,10 +1508,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34923aed9982dd3439d8765604ab313f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Initialized>k__BackingField: 0
-  _isMatching: 0
-  _gridManager: {fileID: 0}
-  _mergeBetweenTimer: 0.1
+  _matchCount: 3
+  _mergeDelay: 0.1
 --- !u!1 &1409954316
 GameObject:
   m_ObjectHideFlags: 0

@@ -50,12 +50,12 @@ namespace GreatGames.CaseLib.Slinky
                     .SetEase(movementEase)
                     .SetRelative(false);
             }
-
+     
             DOVirtual.DelayedCall(moveTime + delayBetweenSegments * segments.Count, () =>
             {
                 slinky.SetIsMoving(false);
                 slinky.OnMovementComplete?.Emit();
-              //  MatchManager.Instance.CheckForMatch();
+               MatchManager.Instance.CheckForMatch();
                 var mover = new SlinkyMover(gridManager.LowerGrid, gridManager);
             });
             gridManager.UpdateItemSlot(slinky, targetKey);
@@ -120,47 +120,35 @@ namespace GreatGames.CaseLib.Slinky
             return true;
         }
 
-
         public void ShiftRemainingSlinkies(SlinkyController initiator = null)
         {
-            var gridManager = GridManager.Instance;
-
-            var emptySlots = _grid.GetAllSlots()
-                .Where(kvp => !kvp.Value.IsOccupied)
-                .OrderBy(kvp => kvp.Key.ToVector2Int().x) 
-                .Select(kvp => kvp.Key)
+            var allSlots = _grid.GetAllSlots()
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x)
                 .ToList();
-
-            foreach (var slot in emptySlots)
-                Debug.Log($" - {slot.ValueAsString}");
 
             var slinkies = SlinkyManager.Instance.GetSlinkiesInLowerGrid()
                 .OfType<SlinkyController>()
-                .OrderBy(s => s.OccupiedGridKeys[0].ToVector2Int().x) 
+                .OrderByDescending(s => s.OccupiedGridKeys[0].ToVector2Int().x)
                 .ToList();
 
             if (initiator != null)
                 slinkies.Remove(initiator);
 
-
             foreach (var slinky in slinkies)
             {
-                var currentX = slinky.OccupiedGridKeys[0].ToVector2Int().x;
+                var currentKey = slinky.OccupiedGridKeys[0];
+                var currentX = currentKey.ToVector2Int().x;
+                var targetSlot = _gridManager.GetFirstEmptySlotOnLeftOf(currentX, false);
 
-                var targetSlot = emptySlots
-                    .Where(slot => slot.ToVector2Int().x > currentX)
-                    .OrderBy(slot => slot.ToVector2Int().x)
-                    .FirstOrDefault();
-
-                if (targetSlot == null)
+                if (targetSlot == null || targetSlot == currentKey)
                     continue;
-                var currentSlot = slinky.SlotIndex;
-                _grid.ClearSlot(currentSlot);
+
+                _grid.ClearSlot(currentKey);
                 _gridManager.PlaceItem(targetSlot, slinky, false);
                 Move(slinky, targetSlot);
-                emptySlots.Remove(targetSlot);
             }
         }
+
         public static void Teleport(SlinkyController slinky, GameKey targetKey)
         {
             if (slinky == null || targetKey == null) return;

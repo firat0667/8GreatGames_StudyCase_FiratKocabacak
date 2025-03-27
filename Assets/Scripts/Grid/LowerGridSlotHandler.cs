@@ -12,7 +12,6 @@ public class LowerGridSlotHandler
     {
         _lowerGrid = grid;
     }
-
     public GameKey GetBestSlotFor(ISlotItem item)
     {
         var slots = _lowerGrid.GetAllSlots()
@@ -48,7 +47,6 @@ public class LowerGridSlotHandler
                             }
                         }
                     }
-
                     else
                     {
                         return rightSlot.Key;

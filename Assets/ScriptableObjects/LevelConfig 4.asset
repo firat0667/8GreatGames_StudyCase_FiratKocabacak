@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LevelConfig 4
   m_EditorClassIdentifier: 
   UpperGridSize: {x: 7, y: 5}
-  LowerGridSize: {x: 9, y: 1}
+  LowerGridSize: {x: 5, y: 1}
   Slinkies:
   - StartSlot: 0
     EndSlot: 2

@@ -6,6 +6,7 @@ using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 namespace GreatGames.CaseLib.Grid
 {
@@ -114,6 +115,24 @@ namespace GreatGames.CaseLib.Grid
                 }
             }
         }
+        public GameKey GetFirstEmptySlotOnLeftOf(int currentX, bool isUpperGrid)
+        {
+            var grid = isUpperGrid ? _upperGrid : _lowerGrid;
+
+            return grid.GetAllSlots()
+                .Where(kvp => !kvp.Value.IsOccupied && kvp.Key.ToVector2Int().x > currentX)
+                .OrderByDescending(kvp => kvp.Key.ToVector2Int().x)
+                .Select(kvp => kvp.Key)
+                .FirstOrDefault();
+        }
+
+        public List<GameKey> GetEmptyLowerGridSlots()
+        {
+            return _lowerGrid.GetAllSlots()
+                .Where(kvp => !kvp.Value.IsOccupied)
+                .Select(kvp => kvp.Key)
+                .ToList();
+        }
 
         public GameKey GetFirstEmptySlot(bool isUpperGrid)
         {
@@ -143,34 +162,14 @@ namespace GreatGames.CaseLib.Grid
         }
         public List<ISlotItem> GetAllItemsInLowerGrid()
         {
-            List<ISlotItem> toRemove = new();
-            foreach (var slotItem in _slotItems)
-            {
-                if (slotItem.OccupiedGridKeys.Count == 0)
-                {
-                    toRemove.Add(slotItem);
-                    continue;
-                }
+            var result = _slotItems
+                .Where(s => s.OccupiedGridKeys.Count > 0 && s.OccupiedGridKeys.All(k => k != null && k.IsLower()))
+                .ToList();
 
-                foreach (var key in slotItem.OccupiedGridKeys)
-                {
-                    if (!key.IsLower())
-                    {
-                        toRemove.Add(slotItem);
-                        break;
-                    }
-                }
-            }
 
-            foreach (var invalid in toRemove)
-            {
-                RemoveItem(invalid);
-            }
-
-            return _slotItems.Where(s =>
-                s.OccupiedGridKeys.Count > 0 &&
-                s.OccupiedGridKeys.TrueForAll(k => k.IsLower())).ToList();
+            return result;
         }
+
         public void UpdateItemSlot(ISlotItem item, GameKey newKey)
         {
             foreach (var key in item.OccupiedGridKeys)

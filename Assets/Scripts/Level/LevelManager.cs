@@ -37,6 +37,8 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
     public void RestartLevel()
     {
         DestroyOldLevel();
+        UIManager.Instance.ClearAllPanels();
+        GridManager.Instance.ClearAll();
         StartCoroutine(LoadLevelRoutine());
     }
 

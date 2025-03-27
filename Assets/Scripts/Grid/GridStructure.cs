@@ -106,7 +106,6 @@ namespace GreatGames.CaseLib.Grid
             item.OccupiedGridKeys.Clear();
             item.OccupiedGridKeys.Add(key);
             item.SlotIndex = key;
-
             OnGridUpdated.Emit(); 
 
             return true;

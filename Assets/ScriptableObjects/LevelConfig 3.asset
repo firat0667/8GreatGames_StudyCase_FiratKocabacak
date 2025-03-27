@@ -13,32 +13,41 @@ MonoBehaviour:
   m_Name: LevelConfig 3
   m_EditorClassIdentifier: 
   UpperGridSize: {x: 6, y: 5}
-  LowerGridSize: {x: 8, y: 1}
+  LowerGridSize: {x: 6, y: 1}
   Slinkies:
-  - StartSlot: 0
-    EndSlot: 24
-    Color: 0
-  - StartSlot: 13
-    EndSlot: 21
+  - StartSlot: 27
+    EndSlot: 0
     Color: 1
-  - StartSlot: 15
-    EndSlot: 19
-    Color: 2
-  - StartSlot: 3
-    EndSlot: 5
-    Color: 2
+  - StartSlot: 5
+    EndSlot: 9
+    Color: 1
   - StartSlot: 29
-    EndSlot: 1
-    Color: 2
-  - StartSlot: 6
     EndSlot: 17
     Color: 1
+  - StartSlot: 3
+    EndSlot: 22
+    Color: 0
+  - StartSlot: 1
+    EndSlot: 12
+    Color: 0
+  - StartSlot: 11
+    EndSlot: 14
+    Color: 0
+  - StartSlot: 6
+    EndSlot: 25
+    Color: 2
   - StartSlot: 4
+    EndSlot: 2
+    Color: 2
+  - StartSlot: 28
+    EndSlot: 8
+    Color: 2
+  - StartSlot: 7
+    EndSlot: 19
+    Color: 3
+  - StartSlot: 24
     EndSlot: 26
-    Color: 1
-  - StartSlot: 2
-    EndSlot: 23
-    Color: 0
-  - StartSlot: 20
-    EndSlot: 11
-    Color: 0
+    Color: 3
+  - StartSlot: 21
+    EndSlot: 10
+    Color: 3

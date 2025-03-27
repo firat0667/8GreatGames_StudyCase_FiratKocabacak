@@ -2,12 +2,10 @@
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
-using GreatGames.CaseLib.Match;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 namespace GreatGames.CaseLib.Slinky
 {
@@ -81,7 +79,12 @@ namespace GreatGames.CaseLib.Slinky
 
         public bool IsMovable => throw new System.NotImplementedException();
 
-        public bool IsMarkedForMatch { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+        private bool _isMarkedForMatch;
+        public bool IsMarkedForMatch
+        {
+            get => _isMarkedForMatch;
+            set => _isMarkedForMatch = value;
+        }
 
         private void Awake()
         {
@@ -112,9 +115,9 @@ namespace GreatGames.CaseLib.Slinky
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(startPos));
             OccupiedGridKeys.Add(gridManager.GetGridKeyFromPosition(endPos));
             CreateSegments(startPos, endPos, transform);
+
            
         }
-
         private void CreateSegments(Vector3 startPos, Vector3 endPos, Transform parent)
         {
             float totalDistance = Vector3.Distance(startPos, endPos);
@@ -183,29 +186,18 @@ namespace GreatGames.CaseLib.Slinky
         }
         public void OnSegmentClicked()
         {
-            if (_isSelected || _isMoving)
-            {
-                return;
-            }
-            if (IsThereLongerSlinkyBlocking(this))
-            {
-                return;
-            }
+            if (_isSelected || _isMoving) return;
+
+            if (IsThereLongerSlinkyBlocking(this)) return;
 
             GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
-            if (emptySlotKey == null)
-            {
-                return;
-            }
+            if (emptySlotKey == null) return;
 
             Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
             if (_gridManager.IsSlotOccupied(emptySlotKey))
             {
                 bool shiftSuccess = _slinkyMover.ShiftUntilFit(emptySlotKey,this);
-                if (!shiftSuccess)
-                {
-                    return;
-                }
+                if (!shiftSuccess) return;
             }
             _isSelected = true;
             MoveTo(emptySlotKey);
@@ -222,8 +214,7 @@ namespace GreatGames.CaseLib.Slinky
                 foreach (var hit in hits)
                 {
                     var other = hit.collider.GetComponentInParent<SlinkyController>();
-                    if (other != null && other != slinky)
-                        return true;
+                    if (other != null && other != slinky) return true;
                 }
             }
             return false;
@@ -252,11 +243,13 @@ namespace GreatGames.CaseLib.Slinky
         }
         public void PlayMergeEffect()
         {
-            VFXManager.Instance.PlayMergeParticle(transform.position);
+            Vector3 slotPosition = GridManager.Instance.GetSlotPosition(SlotIndex, false);
+            VFXManager.Instance.PlayMergeParticle(slotPosition);
         }
         public void RemoveFromGrid()
         {
             GridManager.Instance.RemoveItemAt(SlotIndex);
+            GridManager.Instance.RemoveItem(this);
         }
         //void OnDrawGizmos()
         //{

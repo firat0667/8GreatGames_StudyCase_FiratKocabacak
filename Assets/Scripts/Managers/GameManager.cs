@@ -1,4 +1,5 @@
 using GreatGames.CaseLib.Grid;
+using GreatGames.CaseLib.Match;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.UI;
 using UnityEngine;
@@ -22,12 +23,12 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
     public void CheckGameState()
     {
         bool isFull = GridManager.Instance.IsLowerGridFull();
-      //  bool hasMatch = MatchManager.Instance.CheckAnyAvailableMatch();
+        bool hasMatch = MatchManager.Instance.HasAnyMatchAvailable();
 
-        //if (isFull && !hasMatch)
-        //{
-        //   Instance.TriggerLevelFailed();
-        //}
+        if (isFull && !hasMatch)
+        {
+            TriggerLevelFailed();
+        }
     }
     public void CheckForCompletion()
     {
