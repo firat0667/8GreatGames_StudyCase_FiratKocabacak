@@ -4,6 +4,7 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Match;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using static UnityEditor.Progress;
 
@@ -20,7 +21,7 @@ namespace GreatGames.CaseLib.Slinky
             _gridManager = manager;
         }
 
-        public static void Move(SlinkyController slinky, GameKey targetKey, SlinkyController initiator = null, bool shifting = false)
+        public static void Move(SlinkyController slinky, GameKey targetKey, SlinkyController initiator = null, bool shifting = false, bool checkMatchAfterMove = true)
         {
             if (slinky == null || targetKey == null || slinky.IsMoving)
                 return;
@@ -51,11 +52,14 @@ namespace GreatGames.CaseLib.Slinky
                     .SetRelative(false);
             }
      
-            DOVirtual.DelayedCall(moveTime + delayBetweenSegments * segments.Count, () =>
+            DOVirtual.DelayedCall(moveTime + delayBetweenSegments * segments.Count, async () =>
             {
                 slinky.SetIsMoving(false);
                 slinky.OnMovementComplete?.Emit();
-               MatchManager.Instance.CheckForMatch();
+                if (checkMatchAfterMove)
+                {
+                    MatchManager.Instance.CheckForMatch();
+                }
                 var mover = new SlinkyMover(gridManager.LowerGrid, gridManager);
             });
             gridManager.UpdateItemSlot(slinky, targetKey);
@@ -113,7 +117,7 @@ namespace GreatGames.CaseLib.Slinky
                 }
                 else
                 {
-                    Move(slinky, to.Key, null, true);
+                    Move(slinky, to.Key, null, true, false);
                 }
             }
 

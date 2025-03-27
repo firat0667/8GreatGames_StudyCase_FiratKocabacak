@@ -50,7 +50,7 @@ MonoBehaviour:
   horizontalTightness: 0.8
   springForce: 1200
   dampingFactor: 250
-  _moveDuration: 0.3
+  _moveDuration: 0.2
   _shiftingDuration: 0.1
   _movementEase: 7
   delayBetweenSegments: 0.01

@@ -193,12 +193,12 @@ namespace GreatGames.CaseLib.Slinky
             GameKey emptySlotKey = _gridManager.GetFirstColorEmptySlotOrNextToMatch(this);
             if (emptySlotKey == null) return;
 
-            Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
-            if (_gridManager.IsSlotOccupied(emptySlotKey))
-            {
-                bool shiftSuccess = _slinkyMover.ShiftUntilFit(emptySlotKey,this);
-                if (!shiftSuccess) return;
-            }
+            //Vector3 targetPosition = _gridManager.GetSlotPosition(emptySlotKey, false);
+            //if (_gridManager.IsSlotOccupied(emptySlotKey))
+            //{
+            //    bool shiftSuccess = _slinkyMover.ShiftUntilFit(emptySlotKey,this);
+            //    if (!shiftSuccess) return;
+            //}
             _isSelected = true;
             MoveTo(emptySlotKey);
         }
