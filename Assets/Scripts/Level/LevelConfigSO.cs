@@ -10,9 +10,10 @@ public class LevelConfigSO : ScriptableObject
     public Vector2Int LowerGridSize = new(6, 1);
 
     public List<SlinkyData> Slinkies = new();
-
+    public List<BusData> Buses = new();
+    public List<DoorData> Doors = new();
+    public List<BlockData> Blocks = new();
     private LevelController _levelController;
-
     public LevelController LevelController => _levelController;
 
     public void InitializeLevel()
