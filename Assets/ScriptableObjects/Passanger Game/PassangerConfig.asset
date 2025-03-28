@@ -17,5 +17,4 @@ MonoBehaviour:
   Slinkies: []
   Buses: []
   Doors: []
-  Blocks:
-  - SlotIndex: 9
+  Blocks: []
