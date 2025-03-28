@@ -24,6 +24,11 @@ namespace GreatGames.CaseLib.EditorTools
                     state.SelectedSpawnType == SpawnType.Block)
                 {
                     state.SelectedColor = (ItemColor)EditorGUILayout.EnumPopup("Color", state.SelectedColor);
+
+                    if (state.SelectedSpawnType == SpawnType.Door)
+                    {
+                        state.SelectedExitDirection = (DoorExitDirection)EditorGUILayout.EnumPopup("Enter Direction", state.SelectedExitDirection);
+                    }
                 }
             }
 
@@ -39,7 +44,7 @@ namespace GreatGames.CaseLib.EditorTools
                 {
                     string startSlotStr = FormatSlot(slinky.StartSlot, levelConfig.UpperGridSize);
                     string endSlotStr = FormatSlot(slinky.EndSlot, levelConfig.UpperGridSize);
-                    EditorGUILayout.LabelField($"Start: {startSlotStr}  End: {endSlotStr} | Color: {slinky.Color}");
+                    EditorGUILayout.LabelField($"Start: {startSlotStr}  End: {endSlotStr}  Color: {slinky.Color}");
                 }
             }
             else
@@ -54,7 +59,7 @@ namespace GreatGames.CaseLib.EditorTools
                             {
                                 string slotStr = FormatSlot(bus.Slots[i], levelConfig.UpperGridSize);
                                 string colorStr = bus.Colors.Count > i ? bus.Colors[i].ToString() : "Unknown";
-                                EditorGUILayout.LabelField($"Slot: {slotStr} | Color: {colorStr}");
+                                EditorGUILayout.LabelField($"Slot: {slotStr}  Color: {colorStr}");
                             }
                             EditorGUILayout.Space();
                         }
@@ -66,7 +71,8 @@ namespace GreatGames.CaseLib.EditorTools
                             string slotStr = FormatSlot(door.SlotIndex, levelConfig.UpperGridSize);
                             string colorList = string.Join(", ", door.IncomingColors);
                             string countList = string.Join(", ", door.IncomingCounts);
-                            EditorGUILayout.LabelField($"Door At: {slotStr} | Colors: {colorList} | Counts: {countList}");
+                            string doorDir = door.EnterDirection.ToString();
+                            EditorGUILayout.LabelField($"Door At: {slotStr} Colors: {colorList}  Counts: {countList}  Dir: {doorDir}");
                         }
                         break;
                     case SpawnType.Block:

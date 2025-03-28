@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fedc50d9a668514c9d2797c5248a8c8, type: 3}
+  m_Name: PassagerGameLevelData
+  m_EditorClassIdentifier: 
+  CurrentLevelIndex: 0
+  CurrentLevelCount: 0
+  Levels:
+  - {fileID: 11400000, guid: 5f5b1991bf8a55645b450ad1cee136a4, type: 2}
+  - {fileID: 11400000, guid: 0f7aed50650545b4bacb3f1be33d40c5, type: 2}
+  - {fileID: 11400000, guid: 376cd69271fdc7a468e43b8a55a4525f, type: 2}
+  - {fileID: 11400000, guid: e29cb161f70521440a79ee5a0c57b2b8, type: 2}
+  - {fileID: 11400000, guid: c57273acaecbe5d40a193395057947e7, type: 2}

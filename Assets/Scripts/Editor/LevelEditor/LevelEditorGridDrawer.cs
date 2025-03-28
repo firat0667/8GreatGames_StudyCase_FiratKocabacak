@@ -78,7 +78,7 @@ namespace GreatGames.CaseLib.EditorTools
                         }
                         break;
                     case SpawnType.Door:
-                        LevelEditorHandlers.HandleDoorPlacement(config, slotIndex, state.SelectedColor);
+                        LevelEditorHandlers.HandleDoorPlacement(config, slotIndex, state.SelectedColor, state.SelectedExitDirection);
                         break;
                     case SpawnType.Block:
                         LevelEditorHandlers.HandleBlockPlacement(config, slotIndex);

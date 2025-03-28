@@ -26,7 +26,7 @@ namespace GreatGames.CaseLib.EditorTools
             EditorUtility.SetDirty(levelConfig);
         }
 
-        public static void HandleDoorPlacement(LevelConfigSO levelConfig, int slotIndex, ItemColor color)
+        public static void HandleDoorPlacement(LevelConfigSO levelConfig, int slotIndex, ItemColor color, DoorExitDirection direction)
         {
             Undo.RegisterCompleteObjectUndo(levelConfig, "Add Door");
 
@@ -34,7 +34,8 @@ namespace GreatGames.CaseLib.EditorTools
             {
                 SlotIndex = slotIndex,
                 IncomingColors = new List<ItemColor> { color },
-                IncomingCounts = new List<int> { 4 }
+                IncomingCounts = new List<int> { 4 },
+                EnterDirection = direction
             };
 
             levelConfig.Doors.Add(door);

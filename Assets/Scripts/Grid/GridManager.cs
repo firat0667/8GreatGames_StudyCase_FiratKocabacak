@@ -1,5 +1,6 @@
 ﻿using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Passenger;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
 using GreatGames.CaseLib.Slinky;
@@ -29,6 +30,7 @@ namespace GreatGames.CaseLib.Grid
 
         private readonly List<ISlotItem> _slotItems = new();
         public IReadOnlyList<ISlotItem> AllSlotItems => _slotItems;
+
 
         public bool Initialized { get; set; }
 
@@ -77,8 +79,7 @@ namespace GreatGames.CaseLib.Grid
 
         public GameKey GetFirstColorEmptySlotOrNextToMatch(ISlotItem item)
         {
-                return _slotHandler.GetBestSlotFor(item);
-
+            return _slotHandler.GetBestSlotFor(item);
         }
 
 

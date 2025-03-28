@@ -145,6 +145,16 @@ namespace GreatGames.CaseLib.Grid
             }
             return null;
         }
+        public GameKey CreateKeyFromIndex(int index)
+        {
+            int x = index % _size.x;
+            int y = index / _size.x;
+
+            int correctedX = !_isUpperGrid ? (_size.x - 1 - x) : x;
+            string prefix = GameKeyExtensions.GetPrefix(_isUpperGrid);
+            return new GameKey($"{prefix}{correctedX},{y}");
+        }
+
 
         public Dictionary<GameKey, GridDataContainer> GetAllSlots()
         {
