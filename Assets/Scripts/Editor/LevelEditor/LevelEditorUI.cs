@@ -25,9 +25,9 @@ namespace GreatGames.CaseLib.EditorTools
                 {
                     state.SelectedColor = (ItemColor)EditorGUILayout.EnumPopup("Color", state.SelectedColor);
 
-                    if (state.SelectedSpawnType == SpawnType.Door)
+                    if (state.SelectedSpawnType == SpawnType.Door || state.SelectedSpawnType == SpawnType.Bus )
                     {
-                        state.SelectedExitDirection = (DoorExitDirection)EditorGUILayout.EnumPopup("Enter Direction", state.SelectedExitDirection);
+                        state.SelectedExitDirection = (Direction)EditorGUILayout.EnumPopup("Enter Direction", state.SelectedExitDirection);
                     }
                 }
             }

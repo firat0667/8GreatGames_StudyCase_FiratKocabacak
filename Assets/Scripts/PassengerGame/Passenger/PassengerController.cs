@@ -15,6 +15,10 @@ public class PassengerController : MonoBehaviour, ISlotItem
 
     private Renderer _renderer;
 
+    [Header("Line Settings")]
+    [SerializeField] private float _startOffset = 0.5f;
+    [SerializeField] private float _spacing = 0.5f;
+
     public void Initialize(GameKey key, Color color)
     {
         SlotIndex = key;
@@ -29,5 +33,14 @@ public class PassengerController : MonoBehaviour, ISlotItem
     public void MoveTo(GameKey key)
     {
         throw new System.NotImplementedException();
+    }
+    public void SpawnAtOffset(Vector3 doorPos, Vector3 direction, int orderIndex, ItemColor color)
+    {
+        _renderer = GetComponentInChildren<Renderer>();
+        if (_renderer != null)
+            _renderer.material.color = ItemColorUtility.GetColor(color);
+
+        Vector3 spawnPos = doorPos + direction * (_startOffset + orderIndex * _spacing);
+        transform.position = spawnPos;
     }
 }

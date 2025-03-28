@@ -21,7 +21,8 @@ public class LevelEditorState
     public List<int> SelectedBusSlots = new();
     public List<ItemColor> SelectedBusColors = new();
 
-    public DoorExitDirection SelectedExitDirection = DoorExitDirection.Up;
+    public Direction SelectedExitDirection = Direction.Up;
+    public List<Direction> SelectedBusDirections = new();
 
     public int SelectedStartSlot = -1;
     public int SelectedEndSlot = -1;

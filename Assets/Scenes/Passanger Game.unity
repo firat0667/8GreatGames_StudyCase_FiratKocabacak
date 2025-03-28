@@ -765,12 +765,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1d1aadc5fdb43843861c7c34f47697f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DoorPrefab: {fileID: 6124770933943262341, guid: 9aece88c58549c547ab7eec8c0013ae4, type: 3}
-  BlockPrefab: {fileID: 1747746159548640391, guid: 81de03abad0dd7c4c964ca83f0beb0c2, type: 3}
-  PassengerPrefab: {fileID: 5996496852904358131, guid: 46912abe536d56e4a99882fcad751c30, type: 3}
-  BusHeadPrefab: {fileID: 7675477236380355430, guid: 27012f0784d7a6146894c5de12bb84d9, type: 3}
-  BusMidPrefab: {fileID: 1721998802611581094, guid: 2bddf2ec1670f454bb42477dfb1d913b, type: 3}
-  BusTailPrefab: {fileID: 7258939618950281562, guid: 1e2a91b1d2cbdc94f8a8cb9df995182d, type: 3}
+  _doorPrefab: {fileID: 6124770933943262341, guid: 9aece88c58549c547ab7eec8c0013ae4, type: 3}
+  _blockPrefab: {fileID: 1747746159548640391, guid: 81de03abad0dd7c4c964ca83f0beb0c2, type: 3}
+  _passengerPrefab: {fileID: 5996496852904358131, guid: 46912abe536d56e4a99882fcad751c30, type: 3}
+  _busHeadPrefab: {fileID: 7675477236380355430, guid: 27012f0784d7a6146894c5de12bb84d9, type: 3}
+  _busMidPrefab: {fileID: 1721998802611581094, guid: 2bddf2ec1670f454bb42477dfb1d913b, type: 3}
+  _busTailPrefab: {fileID: 7258939618950281562, guid: 1e2a91b1d2cbdc94f8a8cb9df995182d, type: 3}
+  _wallPrefab: {fileID: 5755646445089269103, guid: 4420d0866a176434d9a18142735f3376, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -1219,6 +1220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ProgressData: {fileID: 11400000, guid: f1af0841c02366c4f85f838a204fa5aa, type: 2}
   _mainCamera: {fileID: 963194230}
+  GameType: 1
 --- !u!1 &1067848167
 GameObject:
   m_ObjectHideFlags: 0

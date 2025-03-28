@@ -87,5 +87,11 @@ namespace GreatGames.CaseLib.Key
             string prefix = GetPrefix(isUpper);
             return new GameKey($"{prefix}{x},{y}");
         }
+        public static Vector2Int ToGridPos(this int index, int gridWidth)
+        {
+            int x = index % gridWidth;
+            int y = index / gridWidth;
+            return new Vector2Int(x, y);
+        }
     }
 }

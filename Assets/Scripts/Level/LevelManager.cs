@@ -8,6 +8,12 @@ using GreatGames.CaseLib.UI;
 using System.Collections;
 using UnityEngine;
 
+public enum GameType
+{
+    SlinkyJam,
+    PassangerGame,
+}
+
 public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingleton
 {
     public LevelDataSO ProgressData;
@@ -20,6 +26,8 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
     public int CurrentLevelCount => ProgressData.CurrentLevelCount + 1;
 
     public bool Initialized { get ; set; }
+
+    public GameType GameType;
 
     private void Awake()
     {
@@ -81,7 +89,9 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
 
         GridManager.Instance.InitializeGrids(currentLevel, levelInstance.transform);
-       // SlinkyManager.Instance.SpawnSlinkies(currentLevel.Slinkies);
+        if(GameType==GameType.SlinkyJam)
+        SlinkyManager.Instance.SpawnSlinkies(currentLevel.Slinkies);
+        else
         PassengerGameBuilder.Instance.BuildLevel();
 
         _mainCamera.AdjustCameraByLevelData(currentLevel);

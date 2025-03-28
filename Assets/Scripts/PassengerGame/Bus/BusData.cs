@@ -7,10 +7,10 @@ public class BusData : ISlotData
 {
     public List<int> Slots;
     public List<ItemColor> Colors;
-
+    public List<Direction> Directions;
     int ISlotData.SlotIndex => Slots != null && Slots.Count > 0 ? Slots[0] : -1;
 }
-public enum DoorExitDirection { Up, Down, Left, Right }
+public enum Direction { Up, Down, Left, Right }
 
 [System.Serializable]
 public class DoorData : ISlotData
@@ -18,7 +18,7 @@ public class DoorData : ISlotData
     public int SlotIndex;
     public List<ItemColor> IncomingColors;
     public List<int> IncomingCounts;
-    public DoorExitDirection EnterDirection = DoorExitDirection.Up;
+    public Direction EnterDirection = Direction.Up;
 
     int ISlotData.SlotIndex => this.SlotIndex;
 }

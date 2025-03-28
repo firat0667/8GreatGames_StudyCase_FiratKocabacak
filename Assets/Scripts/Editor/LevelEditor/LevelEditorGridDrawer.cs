@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.EditorTools
@@ -68,11 +68,12 @@ namespace GreatGames.CaseLib.EditorTools
                         {
                             state.SelectedBusSlots.Add(slotIndex);
                             state.SelectedBusColors.Add(state.SelectedColor);
+                            state.SelectedBusDirections.Add(state.SelectedExitDirection);
                         }
 
                         if (state.SelectedBusSlots.Count == 3)
                         {
-                            LevelEditorHandlers.HandleBusPlacement(config, state.SelectedBusSlots, state.SelectedBusColors);
+                            LevelEditorHandlers.HandleBusPlacement(config, state.SelectedBusSlots, state.SelectedBusColors, state.SelectedBusDirections);
                             state.SelectedBusSlots.Clear();
                             state.SelectedBusColors.Clear();
                         }
@@ -86,5 +87,7 @@ namespace GreatGames.CaseLib.EditorTools
                 }
             }
         }
+
     }
+
 }

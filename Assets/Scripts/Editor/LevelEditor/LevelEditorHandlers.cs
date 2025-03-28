@@ -10,7 +10,7 @@ namespace GreatGames.CaseLib.EditorTools
 {
     public static class LevelEditorHandlers
     {
-        public static void HandleBusPlacement(LevelConfigSO levelConfig, List<int> selectedSlots, List<ItemColor> selectedColors)
+        public static void HandleBusPlacement(LevelConfigSO levelConfig, List<int> selectedSlots, List<ItemColor> selectedColors,List<Direction>selectedDir)
         {
             if (selectedSlots.Count != 3) return;
 
@@ -18,7 +18,8 @@ namespace GreatGames.CaseLib.EditorTools
             levelConfig.Buses.Add(new BusData
             {
                 Slots = new List<int>(selectedSlots),
-                Colors = new List<ItemColor>(selectedColors)
+                Colors = new List<ItemColor>(selectedColors),
+                Directions= new List<Direction>(selectedDir)
             });
 
             Debug.Log($"Bus created on slots: {string.Join(", ", selectedSlots)}");
@@ -26,7 +27,7 @@ namespace GreatGames.CaseLib.EditorTools
             EditorUtility.SetDirty(levelConfig);
         }
 
-        public static void HandleDoorPlacement(LevelConfigSO levelConfig, int slotIndex, ItemColor color, DoorExitDirection direction)
+        public static void HandleDoorPlacement(LevelConfigSO levelConfig, int slotIndex, ItemColor color, Direction direction)
         {
             Undo.RegisterCompleteObjectUndo(levelConfig, "Add Door");
 

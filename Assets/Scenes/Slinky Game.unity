@@ -1215,6 +1215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ProgressData: {fileID: 11400000, guid: 901ee0398f5936b4a8562f7a79b8d497, type: 2}
   _mainCamera: {fileID: 963194230}
+  GameType: 0
 --- !u!1 &1067848167
 GameObject:
   m_ObjectHideFlags: 0

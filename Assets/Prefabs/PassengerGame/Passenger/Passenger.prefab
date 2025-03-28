@@ -695,7 +695,7 @@ GameObject:
   - component: {fileID: 7265932496262026272}
   - component: {fileID: 2187461911995754082}
   m_Layer: 0
-  m_Name: Passanger
+  m_Name: Passenger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -729,6 +729,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 927fa937f18e63848a3897434acb5ca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startOffset: 1
+  _spacing: 0.5
 --- !u!1 &6237885644502613541
 GameObject:
   m_ObjectHideFlags: 0
