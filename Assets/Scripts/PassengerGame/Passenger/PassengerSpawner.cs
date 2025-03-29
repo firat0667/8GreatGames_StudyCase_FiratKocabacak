@@ -2,39 +2,102 @@
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Utility;
 using UnityEngine;
+using System.Collections.Generic;
 
 public static class PassengerSpawner
 {
-    public static void SpawnPassengers(DoorData door, GridManager gridManager, GameObject passengerPrefab, Transform parent)
+    public static void SpawnPassengers(
+        DoorData door,
+        GridManager gridManager,
+        GameObject passengerPrefab,
+        Transform parent,
+        float distanceFromDoor,
+        float yOffset
+    )
     {
         GameKey doorKey = gridManager.UpperGrid.CreateKeyFromIndex(door.SlotIndex);
         Vector3 doorPos = gridManager.GetSlotPosition(doorKey, true);
         Vector3 forward = GetDirectionOffset(door.EnterDirection);
-        Vector3 center = doorPos + forward * 1.5f;
 
-        var formation = door.Formation;
-        if (formation == null)
+        if (!door.PathLineObject.TryGetComponent<LineRenderer>(out var line) || line.positionCount < 2)
         {
-            formation = ScriptableObject.CreateInstance<PassengerFormationSO>();
-            formation.FormationType = PassengerFormationType.Linear;
+            Debug.LogWarning($"LineRenderer not found for Door {door.SlotIndex}");
+            return;
         }
 
         int totalCount = GetTotalPassengerCount(door);
-        var points = formation.EvaluatePoints(totalCount);
+        var points = EvaluatePointsFromLine(line, totalCount);
+        ShiftPointsToStartFromZero(points);
 
+        Vector3? previousPos = null;
         int counter = 0;
-        foreach (var point in points)
+
+        foreach (var localOffset in points)
         {
             Vector3 right = Vector3.Cross(Vector3.up, forward);
-            Vector3 worldOffset = point.z * forward + point.x * right;
-            Vector3 finalPos = center + worldOffset;
-            Debug.DrawLine(center, finalPos, Color.yellow, 5f);
-            Debug.Log($"Passenger Pos: {finalPos}");
-            var passenger = GameObject.Instantiate(passengerPrefab, finalPos, Quaternion.LookRotation(forward), parent);
+            Vector3 worldOffset = localOffset.z * forward + localOffset.x * right + Vector3.up * yOffset;
+            Vector3 finalPos = doorPos + forward * distanceFromDoor + worldOffset;
+
+            Vector3 lookDir = previousPos == null ? forward : (previousPos.Value - finalPos).normalized;
+            Quaternion rotation = Quaternion.LookRotation(lookDir);
+
+            var passenger = GameObject.Instantiate(passengerPrefab, finalPos, rotation, parent);
             var ctrl = passenger.GetComponent<PassengerController>();
             var color = GetColorByIndex(door, ref counter);
             ctrl.SpawnAtOffset(finalPos, color);
+
+            previousPos = finalPos;
         }
+    }
+
+    private static List<Vector3> EvaluatePointsFromLine(LineRenderer line, int count)
+    {
+        List<Vector3> positions = new();
+        if (line == null || line.positionCount < 2) return positions;
+
+        float totalLength = 0f;
+        List<Vector3> localPoints = new();
+
+        for (int i = 0; i < line.positionCount; i++)
+            localPoints.Add(line.GetPosition(i));
+
+        for (int i = 1; i < localPoints.Count; i++)
+            totalLength += Vector3.Distance(localPoints[i - 1], localPoints[i]);
+
+        float spacing = totalLength / Mathf.Max(count - 1, 1);
+        float distanceCovered = 0f;
+        int currentIndex = 0;
+
+        while (positions.Count < count && currentIndex < localPoints.Count - 1)
+        {
+            Vector3 start = localPoints[currentIndex];
+            Vector3 end = localPoints[currentIndex + 1];
+            float segmentLength = Vector3.Distance(start, end);
+
+            if (distanceCovered <= segmentLength)
+            {
+                float t = distanceCovered / segmentLength;
+                Vector3 point = Vector3.Lerp(start, end, t);
+                positions.Add(point);
+                distanceCovered += spacing;
+            }
+            else
+            {
+                distanceCovered -= segmentLength;
+                currentIndex++;
+            }
+        }
+
+        return positions;
+    }
+
+    private static void ShiftPointsToStartFromZero(List<Vector3> points)
+    {
+        if (points == null || points.Count == 0) return;
+
+        Vector3 first = points[0];
+        for (int i = 0; i < points.Count; i++)
+            points[i] -= first;
     }
 
     private static int GetTotalPassengerCount(DoorData door)

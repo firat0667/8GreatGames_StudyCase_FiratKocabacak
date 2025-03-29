@@ -24,6 +24,11 @@ MonoBehaviour:
     IncomingColors: 04000000
     IncomingCounts: 04000000
     EnterDirection: 3
-    Formation: {fileID: 11400000, guid: b5c1b2f7a31646345b4276f8003d44a7, type: 2}
+    PathLineObject: {fileID: 2584064992892490678, guid: 47308aed54a892142acd79b433e371b8, type: 3}
+  - SlotIndex: 7
+    IncomingColors: 00000000
+    IncomingCounts: 04000000
+    EnterDirection: 1
+    PathLineObject: {fileID: 2584064992892490678, guid: 47308aed54a892142acd79b433e371b8, type: 3}
   Blocks:
   - SlotIndex: 8

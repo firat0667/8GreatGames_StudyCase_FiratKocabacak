@@ -19,8 +19,7 @@ public class DoorData : ISlotData
     public List<ItemColor> IncomingColors;
     public List<int> IncomingCounts;
     public Direction EnterDirection = Direction.Up;
-    public PassengerFormationSO Formation;
-
+    public UnityEngine.GameObject PathLineObject;
     int ISlotData.SlotIndex => this.SlotIndex;
 }
 [System.Serializable]

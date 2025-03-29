@@ -56,9 +56,12 @@ namespace GreatGames.CaseLib.EditorTools
             {
                 var doorProp = doorsProp.GetArrayElementAtIndex(i);
                 SerializedProperty formationProp = doorProp.FindPropertyRelative("Formation");
+                if (formationProp != null)
+                {
+                    string label = $"Door {i + 1} Formation";
+                    EditorGUILayout.PropertyField(formationProp, new GUIContent(label));
+                }
 
-                string label = $"Door {i + 1} Formation";
-                EditorGUILayout.PropertyField(formationProp, new GUIContent(label));
             }
 
             so.ApplyModifiedProperties();
@@ -128,9 +131,9 @@ namespace GreatGames.CaseLib.EditorTools
                 string colorList = string.Join(", ", door.IncomingColors);
                 string countList = string.Join(", ", door.IncomingCounts);
                 string dir = door.EnterDirection.ToString();
-                string formation = door.Formation ? door.Formation.name : "None";
+                string pathName = door.PathLineObject ? door.PathLineObject.name : "None";
 
-                EditorGUILayout.LabelField($"Slot: {slotStr} | Colors: {colorList} | Counts: {countList} | Dir: {dir} | Formation: {formation}");
+                EditorGUILayout.LabelField($"Slot: {slotStr} | Colors: {colorList} | Counts: {countList} | Dir: {dir} | Formation: {pathName}");
             }
         }
 

@@ -3,7 +3,6 @@ using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Utility;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,20 +10,23 @@ namespace GreatGames.CaseLib.Passenger
 {
     public class PassengerGameBuilder : FoundationSingleton<PassengerGameBuilder>, IFoundationSingleton
     {
-        [Header("Prefabs")]
         [SerializeField] private GameObject _doorPrefab;
         [SerializeField] private GameObject _blockPrefab;
         [SerializeField] private GameObject _passengerPrefab;
 
-        [Header("Bus Prefabs")]
         [SerializeField] private GameObject _busHeadPrefab;
         [SerializeField] private GameObject _busMidPrefab;
         [SerializeField] private GameObject _busTailPrefab;
 
-        [Header("Dependencies")]
         private GridManager _gridManager;
 
         [SerializeField] private GameObject _wallPrefab;
+
+        [SerializeField] private float _distanceFromDoor = 1.5f;
+        [SerializeField] private float _passengerYOffset = 0f;
+
+        public float DistanceFromDoor => _distanceFromDoor;
+        public float PassengerYOffset => _passengerYOffset;
 
         public bool Initialized { get; set; }
 
@@ -32,6 +34,7 @@ namespace GreatGames.CaseLib.Passenger
         {
             _gridManager = GridManager.Instance;
         }
+
         public void BuildLevel()
         {
             BuildBlocks();
@@ -47,7 +50,7 @@ namespace GreatGames.CaseLib.Passenger
             {
                 GameKey key = _gridManager.UpperGrid.CreateKeyFromIndex(block.SlotIndex);
                 Vector3 pos = _gridManager.GetSlotPosition(key, true);
-                var go = Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
+                var go = GameObject.Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
                 ComponentUtils.SetNameBySlotType(go, SlotType.Block, key);
             }
         }
@@ -61,17 +64,22 @@ namespace GreatGames.CaseLib.Passenger
         private void BuildPassengers()
         {
             foreach (var door in _gridManager.LevelData.Doors)
-                PassengerSpawner.SpawnPassengers(door, _gridManager, _passengerPrefab, transform);
+                PassengerSpawner.SpawnPassengers(
+                    door,
+                    _gridManager,
+                    _passengerPrefab,
+                    transform,
+                    DistanceFromDoor,
+                    PassengerYOffset
+                );
         }
+
         private void BuildWalls()
         {
             WallBuilder.BuildForGrid(_gridManager.UpperGrid, _gridManager, _wallPrefab, transform);
         }
+
         private void BuildBuses()
-        {
-            CreateBuses();
-        }
-        private void CreateBuses()
         {
             foreach (var busData in _gridManager.LevelData.Buses)
             {
@@ -80,9 +88,7 @@ namespace GreatGames.CaseLib.Passenger
 
                 List<GameKey> slotKeys = new();
                 foreach (int index in busData.Slots)
-                {
                     slotKeys.Add(_gridManager.UpperGrid.CreateKeyFromIndex(index));
-                }
 
                 Vector3 headPos = _gridManager.GetSlotPosition(slotKeys[0], true);
                 GameObject busGO = new GameObject($"Bus_{slotKeys[0].ValueAsString}");
@@ -101,30 +107,29 @@ namespace GreatGames.CaseLib.Passenger
                 );
             }
         }
-
     }
 }
-    namespace GreatGames.CaseLib.Utility
+
+namespace GreatGames.CaseLib.Utility
+{
+    public static class ComponentUtils
     {
-        public static class ComponentUtils
+        public static bool TryGetComponentInChildren<T>(this GameObject obj, out T result) where T : Component
         {
-            public static bool TryGetComponentInChildren<T>(this GameObject obj, out T result) where T : Component
+            result = obj.GetComponentInChildren<T>();
+            return result != null;
+        }
+
+        public static void SetNameBySlotType(GameObject obj, SlotType type, GameKey key)
+        {
+            string prefix = type switch
             {
-                result = obj.GetComponentInChildren<T>();
-                return result != null;
-            }
-            public static void SetNameBySlotType(GameObject obj, SlotType type, GameKey key)
-            {
-               string prefix = type switch
-               {
-                  SlotType.Door => "D",
-                  SlotType.Block => "B",
-                _  => "U"
-                };
+                SlotType.Door => "D",
+                SlotType.Block => "B",
+                _ => "U"
+            };
 
             obj.name = $"{prefix}_{key.ValueAsString}";
-           }
+        }
     }
-
-    }
-
+}
