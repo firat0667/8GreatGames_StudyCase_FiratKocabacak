@@ -1,7 +1,5 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using GreatGames.CaseLib.Grid;
-using GreatGames.CaseLib.EditorTools;
 
 namespace GreatGames.CaseLib.EditorTools
 {

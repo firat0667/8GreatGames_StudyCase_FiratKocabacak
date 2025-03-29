@@ -48,4 +48,8 @@ public class GameManager : FoundationSingleton<GameManager>, IFoundationSingleto
     }
 
 }
-
+namespace GreatGames.CaseLib.Definitions
+{
+    public enum SlotType {Door, Block }
+    public enum GameType { SlinkyGame, PassengerGame }
+}

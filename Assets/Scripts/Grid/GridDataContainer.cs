@@ -1,3 +1,4 @@
+using GreatGames.CaseLib.Definitions;
 using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Signals;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace GreatGames.CaseLib.Grid
         public bool HasItem => Item != null; 
 
         public object Value { get; set; }
+        private SlotType _slotType;
         public GridDataContainer(int index, Vector3 position)
         {
             Index = index;
@@ -22,7 +24,6 @@ namespace GreatGames.CaseLib.Grid
             IsOccupied = false;
             OnSlotStateChanged = new BasicSignal();
         }
-
         public void SetItem(ISlotItem item)
         {
             Item = item;
@@ -47,6 +48,15 @@ namespace GreatGames.CaseLib.Grid
         {
             item = Item;
             return item != null;
+        }
+        public void SetSlotType(SlotType type)
+        {
+            _slotType = type;
+        }
+
+        public SlotType GetSlotType()
+        {
+            return _slotType;
         }
 
     }

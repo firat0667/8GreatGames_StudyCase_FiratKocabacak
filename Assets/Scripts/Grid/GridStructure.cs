@@ -1,10 +1,9 @@
-﻿using DG.Tweening;
-using GreatGames.CaseLib.DI;
+﻿using GreatGames.CaseLib.DI;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Signals;
-using GreatGames.CaseLib.Slinky;
 using System.Collections.Generic;
 using UnityEngine;
+using GreatGames.CaseLib.Definitions;
 
 namespace GreatGames.CaseLib.Grid
 {
@@ -25,7 +24,6 @@ namespace GreatGames.CaseLib.Grid
 
         public BasicSignal OnGridUpdated { get; private set; }
         public object Value { get => this; set { } }
-
         public GridStructure(Vector2Int size, Vector3 offset, GameObject slotPrefab, bool isUpperGrid)
         {
             _size = size;
@@ -110,7 +108,13 @@ namespace GreatGames.CaseLib.Grid
 
             return true;
         }
-
+        public void SetSlotType(GameKey key, SlotType type)
+        {
+            if (_slots.TryGetValue(key, out var container))
+            {
+                container.SetSlotType(type);
+            }
+        }
 
 
         public GameObject GetSlotObject(GameKey key)

@@ -1,4 +1,5 @@
-﻿using GreatGames.CaseLib.Grid;
+﻿using GreatGames.CaseLib.Definitions;
+using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Utility;
@@ -16,9 +17,9 @@ namespace GreatGames.CaseLib.Passenger
         [SerializeField] private GameObject _passengerPrefab;
 
         [Header("Bus Prefabs")]
-        [SerializeField] private  GameObject _busHeadPrefab;
-        [SerializeField] private  GameObject _busMidPrefab;
-        [SerializeField] private  GameObject _busTailPrefab;
+        [SerializeField] private GameObject _busHeadPrefab;
+        [SerializeField] private GameObject _busMidPrefab;
+        [SerializeField] private GameObject _busTailPrefab;
 
         [Header("Dependencies")]
         private GridManager _gridManager;
@@ -33,67 +34,56 @@ namespace GreatGames.CaseLib.Passenger
         }
         public void BuildLevel()
         {
-            CreateByData(_gridManager.LevelData.Blocks, _blockPrefab);
-            CreateByData(_gridManager.LevelData.Doors, _doorPrefab, true);
-            CreateBuses();
-            CreatePassengers();
+            BuildBlocks();
+            BuildDoors();
+            BuildBuses();
+            BuildPassengers();
             BuildWalls();
         }
 
-        private void CreateByData<T>(List<T> dataList, GameObject prefab, bool useColor = false) where T : ISlotData
+        private void BuildBlocks()
         {
-            foreach (var data in dataList)
+            foreach (var block in _gridManager.LevelData.Blocks)
             {
-                GameKey key = _gridManager.UpperGrid.CreateKeyFromIndex(data.SlotIndex);
-
-                if (data is not DoorData)
-                {
-                    Vector3 pos = _gridManager.GetSlotPosition(key, true);
-                    Instantiate(prefab, pos, Quaternion.identity, transform);
-                    continue;
-                }
-
-                DoorData door = data as DoorData;
-                Vector3 centerPos = _gridManager.GetSlotPosition(key, true);
-                Vector3 offset = GetDirectionOffset(door.EnterDirection) * 0.5f;
-                Quaternion rotation = GetRotationFromDirection(door.EnterDirection);
-                Vector3 finalPos = centerPos + offset;
-
-                var go = Instantiate(prefab, finalPos, rotation, transform);
-                if (useColor && door.IncomingColors.Count > 0)
-                {
-                    if (go.TryGetComponent<Renderer>(out var renderer) ||
-                        go.TryGetComponentInChildren<Renderer>(out renderer))
-                    {
-                        renderer.material.color = ItemColorUtility.GetColor(door.IncomingColors[0]);
-                    }
-
-                    for (int i = 0; i < door.IncomingColors.Count && i < go.transform.childCount; i++)
-                    {
-                        var child = go.transform.GetChild(i);
-                        if (child.TryGetComponent<Renderer>(out var childRenderer))
-                        {
-                            childRenderer.material.color = ItemColorUtility.GetColor(door.IncomingColors[i]);
-                        }
-                    }
-                }
+                GameKey key = _gridManager.UpperGrid.CreateKeyFromIndex(block.SlotIndex);
+                Vector3 pos = _gridManager.GetSlotPosition(key, true);
+                var go = Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
+                ComponentUtils.SetNameBySlotType(go, SlotType.Block, key);
             }
         }
 
+        private void BuildDoors()
+        {
+            foreach (var door in _gridManager.LevelData.Doors)
+                DoorBuilder.Build(door, _gridManager, _doorPrefab, transform);
+        }
+
+        private void BuildPassengers()
+        {
+            foreach (var door in _gridManager.LevelData.Doors)
+                PassengerSpawner.SpawnPassengers(door, _gridManager, _passengerPrefab, transform);
+        }
+        private void BuildWalls()
+        {
+            WallBuilder.BuildForGrid(_gridManager.UpperGrid, _gridManager, _wallPrefab, transform);
+        }
+        private void BuildBuses()
+        {
+            CreateBuses();
+        }
         private void CreateBuses()
         {
             foreach (var busData in _gridManager.LevelData.Buses)
             {
                 if (busData.Slots == null || busData.Slots.Count != 3)
-                {
                     continue;
-                }
 
                 List<GameKey> slotKeys = new();
                 foreach (int index in busData.Slots)
                 {
                     slotKeys.Add(_gridManager.UpperGrid.CreateKeyFromIndex(index));
                 }
+
                 Vector3 headPos = _gridManager.GetSlotPosition(slotKeys[0], true);
                 GameObject busGO = new GameObject($"Bus_{slotKeys[0].ValueAsString}");
                 busGO.transform.SetParent(transform);
@@ -112,73 +102,29 @@ namespace GreatGames.CaseLib.Passenger
             }
         }
 
-        private void BuildWalls()
-        {
-            WallBuilder.BuildForGrid(_gridManager.UpperGrid, _gridManager, _wallPrefab, transform);
-        }
-
-
-        private void CreatePassengers()
-        {
-            foreach (var door in _gridManager.LevelData.Doors)
-            {
-                GameKey doorKey = _gridManager.UpperGrid.CreateKeyFromIndex(door.SlotIndex);
-                Vector3 doorPos = _gridManager.GetSlotPosition(doorKey, true);
-                Vector3 offset = GetDirectionOffset(door.EnterDirection);
-
-                float spacing = 0.5f;
-                int count = 0;
-
-                for (int i = 0; i < door.IncomingColors.Count; i++)
-                {
-                    var color = door.IncomingColors[i];
-                    var passengerCount = door.IncomingCounts[i];
-
-                    for (int j = 0; j < passengerCount; j++)
-                    {
-                        Vector3 spawnPos = doorPos + offset * (count + 2) * spacing;
-                        Quaternion rotation = GetRotationFromDirection(door.EnterDirection);
-                        GameObject go = Instantiate(_passengerPrefab, spawnPos, rotation, transform);
-
-                        var controller = go.GetComponent<PassengerController>();
-                        controller.SpawnAtOffset(doorPos, offset, count, color);
-
-                        count++;
-                    }
-                }
-            }
-        }
-        private Vector3 GetDirectionOffset(Direction dir)
-        {
-            return dir switch
-            {
-                Direction.Up => Vector3.forward,
-                Direction.Down => Vector3.back,
-                Direction.Left => Vector3.left,
-                Direction.Right => Vector3.right,
-                _ => Vector3.forward
-            };
-        }
-        private Quaternion GetRotationFromDirection(Direction dir)
-        {
-            return dir switch
-            {
-                Direction.Up => Quaternion.Euler(0, 0, 0),
-                Direction.Down => Quaternion.Euler(0, 180, 0),
-                Direction.Left => Quaternion.Euler(0, -90, 0),
-                Direction.Right => Quaternion.Euler(0, 90, 0),
-                _ => Quaternion.identity
-            };
-        }
-
     }
-
 }
-public static class ComponentUtils
-{
-    public static bool TryGetComponentInChildren<T>(this GameObject obj, out T result) where T : Component
+    namespace GreatGames.CaseLib.Utility
     {
-        result = obj.GetComponentInChildren<T>();
-        return result != null;
+        public static class ComponentUtils
+        {
+            public static bool TryGetComponentInChildren<T>(this GameObject obj, out T result) where T : Component
+            {
+                result = obj.GetComponentInChildren<T>();
+                return result != null;
+            }
+            public static void SetNameBySlotType(GameObject obj, SlotType type, GameKey key)
+            {
+               string prefix = type switch
+               {
+                  SlotType.Door => "D",
+                  SlotType.Block => "B",
+                _  => "U"
+                };
+
+            obj.name = $"{prefix}_{key.ValueAsString}";
+           }
     }
-}
+
+    }
+

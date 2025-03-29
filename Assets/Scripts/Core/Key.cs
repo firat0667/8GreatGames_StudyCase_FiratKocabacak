@@ -93,5 +93,6 @@ namespace GreatGames.CaseLib.Key
             int y = index / gridWidth;
             return new Vector2Int(x, y);
         }
+
     }
 }

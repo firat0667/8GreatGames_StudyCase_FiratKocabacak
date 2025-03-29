@@ -19,6 +19,7 @@ public class DoorData : ISlotData
     public List<ItemColor> IncomingColors;
     public List<int> IncomingCounts;
     public Direction EnterDirection = Direction.Up;
+    public PassengerFormationSO Formation;
 
     int ISlotData.SlotIndex => this.SlotIndex;
 }

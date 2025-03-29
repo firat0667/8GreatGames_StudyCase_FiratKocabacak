@@ -34,13 +34,12 @@ public class PassengerController : MonoBehaviour, ISlotItem
     {
         throw new System.NotImplementedException();
     }
-    public void SpawnAtOffset(Vector3 doorPos, Vector3 direction, int orderIndex, ItemColor color)
+    public void SpawnAtOffset(Vector3 finalPos, ItemColor color)
     {
         _renderer = GetComponentInChildren<Renderer>();
         if (_renderer != null)
             _renderer.material.color = ItemColorUtility.GetColor(color);
 
-        Vector3 spawnPos = doorPos + direction * (_startOffset + orderIndex * _spacing);
-        transform.position = spawnPos;
+        transform.position = finalPos;
     }
 }

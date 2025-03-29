@@ -1,4 +1,5 @@
-﻿using GreatGames.CaseLib.Grid;
+﻿using GreatGames.CaseLib.Definitions;
+using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Level;
 using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Passenger;
@@ -8,11 +9,6 @@ using GreatGames.CaseLib.UI;
 using System.Collections;
 using UnityEngine;
 
-public enum GameType
-{
-    SlinkyJam,
-    PassangerGame,
-}
 
 public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingleton
 {
@@ -89,10 +85,16 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
 
 
         GridManager.Instance.InitializeGrids(currentLevel, levelInstance.transform);
-        if(GameType==GameType.SlinkyJam)
-        SlinkyManager.Instance.SpawnSlinkies(currentLevel.Slinkies);
+        if(GameType==GameType.SlinkyGame)
+        {
+            SlinkyManager.Instance.SpawnSlinkies(currentLevel.Slinkies);
+        }
+
         else
-        PassengerGameBuilder.Instance.BuildLevel();
+        {
+            PassengerGameBuilder.Instance.BuildLevel();
+        }
+      
 
         _mainCamera.AdjustCameraByLevelData(currentLevel);
         OnLevelLoaded.Emit();

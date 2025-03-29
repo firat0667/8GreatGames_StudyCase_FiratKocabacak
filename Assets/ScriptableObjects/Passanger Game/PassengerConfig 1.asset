@@ -10,26 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4ba268ac58fcefc46b900ebf6ee2b3da, type: 3}
-  m_Name: PassengerConfig
+  m_Name: PassengerConfig 1
   m_EditorClassIdentifier: 
-  UpperGridSize: {x: 5, y: 5}
+  UpperGridSize: {x: 3, y: 3}
   LowerGridSize: {x: 0, y: 0}
   Slinkies: []
   Buses:
-  - Slots: 0d0000000c00000011000000
-    Colors: 030000000300000003000000
-    Directions: 030000000300000000000000
+  - Slots: 000000000300000004000000
+    Colors: 000000000200000004000000
+    Directions: 000000000000000002000000
   Doors:
-  - SlotIndex: 10
-    IncomingColors: 02000000
-    IncomingCounts: 04000000
-    EnterDirection: 2
-    Formation: {fileID: 11400000, guid: b5c1b2f7a31646345b4276f8003d44a7, type: 2}
-  - SlotIndex: 19
-    IncomingColors: 00000000
+  - SlotIndex: 2
+    IncomingColors: 04000000
     IncomingCounts: 04000000
     EnterDirection: 3
     Formation: {fileID: 11400000, guid: b5c1b2f7a31646345b4276f8003d44a7, type: 2}
   Blocks:
-  - SlotIndex: 3
-  - SlotIndex: 0
+  - SlotIndex: 8
