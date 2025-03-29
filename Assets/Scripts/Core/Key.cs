@@ -17,6 +17,10 @@ namespace GreatGames.CaseLib.Key
         protected int _value;
         public string ValueAsString => _valueAsString;
         protected string _valueAsString;
+
+        public int X => ToVector2Int().x;
+        public int Y => ToVector2Int().y;
+
         public GameKey(string value)
         {
             _valueAsString = value;
@@ -92,6 +96,20 @@ namespace GreatGames.CaseLib.Key
             int x = index % gridWidth;
             int y = index / gridWidth;
             return new Vector2Int(x, y);
+        }
+        public static GameKey GetAdjacent(this GameKey key, Direction dir)
+        {
+            int x = key.X;
+            int y = key.Y;
+
+            return dir switch
+            {
+                Direction.Up => new GameKey($"U_{x},{y + 1}"),
+                Direction.Down => new GameKey($"U_{x},{y - 1}"),
+                Direction.Left => new GameKey($"U_{x - 1},{y}"),
+                Direction.Right => new GameKey($"U_{x + 1},{y}"),
+                _ => key
+            };
         }
 
     }

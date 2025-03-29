@@ -10,7 +10,9 @@ public class BusData : ISlotData
     public List<Direction> Directions;
     int ISlotData.SlotIndex => Slots != null && Slots.Count > 0 ? Slots[0] : -1;
 }
-public enum Direction { Up, Down, Left, Right }
+public enum Direction { Up, Down, Left, Right,
+    None
+}
 
 [System.Serializable]
 public class DoorData : ISlotData

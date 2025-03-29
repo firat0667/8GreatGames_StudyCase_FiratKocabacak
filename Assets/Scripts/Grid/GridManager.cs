@@ -150,6 +150,11 @@ namespace GreatGames.CaseLib.Grid
             var grid = isUpperGrid ? _upperGrid : _lowerGrid;
             return grid.PlaceItem(key, item, force);
         }
+        public bool PlaceMultiSlotItem<T>(GameKey key, T item, bool force = false) where T : ISlotItem
+        {
+            var grid = _upperGrid;
+            return grid.PlaceMultiSlotItem(key, item, force);
+        }
 
         public void RemoveItem(ISlotItem item)
         {

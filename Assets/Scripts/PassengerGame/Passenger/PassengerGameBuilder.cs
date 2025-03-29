@@ -4,6 +4,7 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace GreatGames.CaseLib.Passenger
@@ -50,8 +51,10 @@ namespace GreatGames.CaseLib.Passenger
             {
                 GameKey key = _gridManager.UpperGrid.CreateKeyFromIndex(block.SlotIndex);
                 Vector3 pos = _gridManager.GetSlotPosition(key, true);
-                var go = GameObject.Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
+                var go = Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
                 ComponentUtils.SetNameBySlotType(go, SlotType.Block, key);
+                var dummy = new DummyBlockItem(go);
+                _gridManager.UpperGrid.PlaceItem(key, dummy, force: true);
             }
         }
 
@@ -81,19 +84,29 @@ namespace GreatGames.CaseLib.Passenger
 
         private void BuildBuses()
         {
-            foreach (var busData in _gridManager.LevelData.Buses)
+            var busList = new List<BusData>(_gridManager.LevelData.Buses); 
+
+            foreach (var busData in busList)
             {
+                Debug.Log($"[BuildBuses] busData.Slots.Count: {busData.Slots?.Count}");
                 if (busData.Slots == null || busData.Slots.Count != 3)
+                {
+                    Debug.LogWarning("[BuildBuses] BusData hatalı! Slots eksik.");
                     continue;
+                }
+                  
 
                 List<GameKey> slotKeys = new();
                 foreach (int index in busData.Slots)
                     slotKeys.Add(_gridManager.UpperGrid.CreateKeyFromIndex(index));
 
                 Vector3 headPos = _gridManager.GetSlotPosition(slotKeys[0], true);
-                GameObject busGO = new GameObject($"Bus_{slotKeys[0].ValueAsString}");
-                busGO.transform.SetParent(transform);
-                busGO.transform.position = headPos;
+                GameObject parentGO = new GameObject($"Bus_{slotKeys[0].ValueAsString}");
+                parentGO.transform.SetParent(transform);
+                parentGO.transform.position = headPos;
+
+                GameObject busGO = new GameObject("BusRoot");
+                busGO.transform.SetParent(parentGO.transform, false);
 
                 var controller = busGO.AddComponent<BusController>();
                 controller.Initialize(
@@ -105,8 +118,14 @@ namespace GreatGames.CaseLib.Passenger
                     midPrefab: _busMidPrefab,
                     tailPrefab: _busTailPrefab
                 );
+                foreach (var key in slotKeys)
+                {
+                    Debug.Log($"[BuildBuses] Key ekleniyor: {key.ValueAsString}");
+                    GridManager.Instance.PlaceMultiSlotItem(key, controller, force: true);
+                }
             }
         }
+
     }
 }
 
