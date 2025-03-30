@@ -73,7 +73,7 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     {
         CurrentDirection = newDir;
     }
-    private Quaternion GetRotationFromDirection(Direction dir)
+    public Quaternion GetRotationFromDirection(Direction dir)
     {
         return dir switch
         {

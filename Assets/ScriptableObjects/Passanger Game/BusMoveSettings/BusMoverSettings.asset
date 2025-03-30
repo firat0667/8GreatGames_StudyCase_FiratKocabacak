@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveDuration: 0.15
   MoveEase: 32
+  RotationSpeed: 0
+  RotationEase: 4

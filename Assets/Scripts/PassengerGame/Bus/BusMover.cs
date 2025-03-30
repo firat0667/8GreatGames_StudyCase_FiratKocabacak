@@ -7,11 +7,11 @@ using GreatGames.CaseLib.Grid;
 public static class BusMover
 {
     public static void TryMove(
-        BusController bus,
-        Direction direction,
-        GridManager gridManager,
-        BusMoverSettingsSO settings
-    )
+    BusController bus,
+    Direction direction,
+    GridManager gridManager,
+    BusMoverSettingsSO settings
+)
     {
         var currentKeys = new List<GameKey>(bus.OccupiedGridKeys);
 
@@ -19,11 +19,12 @@ public static class BusMover
             return;
 
         GameKey newHead = currentKeys[0].GetAdjacent(direction);
-
         if (!gridManager.UpperGrid.IsSlotEmpty(newHead))
             return;
 
         var newKeys = new List<GameKey> { newHead, currentKeys[0], currentKeys[1] };
+
+        bus.SetDirection(direction);
 
         AnimateSegments(bus, currentKeys, newKeys, gridManager, () =>
         {
@@ -34,7 +35,6 @@ public static class BusMover
                 gridManager.UpperGrid.PlaceMultiSlotItem(newKeys[i], bus, force: true);
 
             bus.UpdateSlotKeys(newKeys);
-            bus.SetDirection(direction);
             bus.SetMoving(false);
         }, settings);
 
@@ -42,22 +42,40 @@ public static class BusMover
     }
 
     private static void AnimateSegments(
-        BusController bus,
-        List<GameKey> prevKeys,
-        List<GameKey> newKeys,
-        GridManager gridManager,
-        System.Action onComplete,
-        BusMoverSettingsSO settings
-    )
+     BusController bus,
+     List<GameKey> prevKeys,
+     List<GameKey> newKeys,
+     GridManager gridManager,
+     System.Action onComplete,
+     BusMoverSettingsSO settings
+ )
     {
         int completed = 0;
 
         for (int i = 0; i < bus.Segments.Count; i++)
         {
+            GameObject segment = bus.Segments[i];
             GameKey targetKey = (i == 0) ? newKeys[0] : prevKeys[i - 1];
             Vector3 worldTarget = gridManager.GetSlotPosition(targetKey, true);
 
-            bus.Segments[i].transform.DOMove(worldTarget, settings.MoveDuration)
+            Quaternion targetRotation;
+            if (i == 0)
+            {
+                targetRotation = bus.GetRotationFromDirection(bus.CurrentDirection);
+            }
+            else
+            {
+                Vector3 dir = bus.Segments[i - 1].transform.position - segment.transform.position;
+                if (dir != Vector3.zero)
+                    targetRotation = Quaternion.LookRotation(dir);
+                else
+                    targetRotation = segment.transform.rotation;
+            }
+
+            segment.transform.DORotateQuaternion(targetRotation, settings.RotationSpeed)
+                .SetEase(settings.RotationEase);
+
+            segment.transform.DOMove(worldTarget, settings.MoveDuration)
                 .SetEase(settings.MoveEase)
                 .OnComplete(() =>
                 {

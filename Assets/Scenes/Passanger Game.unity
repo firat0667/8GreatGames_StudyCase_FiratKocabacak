@@ -1999,6 +1999,10 @@ MonoBehaviour:
   segmentCount: 3
   moveTime: 0.25
   moveEase: 1
+  segments: []
+  startMousePos: {x: 0, y: 0, z: 0}
+  isMoving: 0
+  activeIndex: -1
 --- !u!4 &1832740829
 Transform:
   m_ObjectHideFlags: 0
