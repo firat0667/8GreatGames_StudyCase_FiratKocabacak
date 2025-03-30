@@ -737,7 +737,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &667208470
 Transform:
   m_ObjectHideFlags: 0
@@ -775,6 +775,7 @@ MonoBehaviour:
   _wallPrefab: {fileID: 5755646445089269103, guid: 4420d0866a176434d9a18142735f3376, type: 3}
   _distanceFromDoor: 1
   _passengerYOffset: 0
+  _busMoverSettingsSO: {fileID: 11400000, guid: 6e31d27a67c9239458016c7093680842, type: 2}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -1109,7 +1110,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.60876137, y: 0, z: 0, w: 0.7933534}
-  m_LocalPosition: {x: 0.94, y: 11.45, z: -3.14}
+  m_LocalPosition: {x: 2.5, y: 10.83, z: -5.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1172,8 +1173,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31c6861cd3ac11f47ac76000c229030b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseFOV: 80
-  _fowMultiply: 5
+  _baseFOV: 50
+  _fowMultiply: 4
   _baseWidth: 6
   _cameraXOffset: 0.25
   _cameraXMultiply: 1
@@ -1981,7 +1982,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1832740828
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -104,13 +104,14 @@ namespace GreatGames.CaseLib.Key
 
             return dir switch
             {
-                Direction.Up => new GameKey($"U_{x},{y + 1}"),
-                Direction.Down => new GameKey($"U_{x},{y - 1}"),
+                Direction.Up => new GameKey($"U_{x},{y - 1}"),      
+                Direction.Down => new GameKey($"U_{x},{y + 1}"),   
                 Direction.Left => new GameKey($"U_{x - 1},{y}"),
                 Direction.Right => new GameKey($"U_{x + 1},{y}"),
                 _ => key
             };
         }
+
 
     }
 }

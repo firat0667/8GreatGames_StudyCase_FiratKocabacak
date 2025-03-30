@@ -10,28 +10,31 @@ public class BusSegmentClickHandler : MonoBehaviour
     {
         _busController = controller;
         _segmentIndex = index;
-        Debug.Log($"[ClickHandler] Segment {index} bağlandı -> Bus: {controller.name}");
     }
 
     private void OnMouseDown()
     {
         _start = Input.mousePosition;
-        _hasSwiped = false;
+        _hasSwiped = true;
     }
 
-
-    private void OnMouseDrag()
+    private void OnMouseUp()
     {
-        if (_hasSwiped) return;
+        _hasSwiped = false;
+    }
+    private void Update()
+    {
+        if (_hasSwiped && !_busController.IsMoving)
+        {
+            Vector2 delta = (Vector2)Input.mousePosition - _start;
+            if (delta.magnitude >= 20f)
+            {
+                Direction dir = GetDirectionFromDelta(delta);
+                _start = Input.mousePosition; 
 
-        Vector2 delta = (Vector2)Input.mousePosition - _start;
-        if (delta.magnitude < 20f) return; // minimum swipe eşiği
-
-        Direction dir = GetDirectionFromDelta(delta);
-        Debug.Log($"[ClickHandler] Swipe detected! Segment: {_segmentIndex}, Dir: {dir}");
-
-        _busController.OnSegmentClicked(dir);
-        _hasSwiped = true;
+                _busController.OnSegmentClicked(dir); 
+            }
+        }
     }
 
     private Direction GetDirectionFromDelta(Vector2 delta)

@@ -7,13 +7,10 @@ using GreatGames.CaseLib.Utility;
 public class BusController : MonoBehaviour, ISlotItem, IMatchable
 {
     public List<GameObject> Segments { get; private set; } = new();
-
     private readonly List<GameKey> _slotKeys = new();
     public List<GameKey> SlotKeys => _slotKeys;
     public List<ItemColor> SegmentColors { get; private set; } = new();
-
     public Direction CurrentDirection { get; private set; }
-
     public GameKey SlotIndex => SlotKeys != null && SlotKeys.Count > 0 ? SlotKeys[0] : null;
     public List<GameKey> OccupiedGridKeys => SlotKeys;
     public GameObject Root => gameObject;
@@ -22,13 +19,13 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     public bool IsMarkedForMatch { get; set; }
     GameKey ISlotItem.SlotIndex { get ; set ; }
     ItemColor ISlotItem.ItemColor { get ; set; }
-
+    public bool IsMoving { get; private set; }
+    public BusMoverSettingsSO BusMoveSettings { get; set; }
     public void Initialize(List<GameKey> keys, List<ItemColor> colors, List<Direction> directions, GridManager gridManager,
                            GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
     {
         _slotKeys.Clear();
         _slotKeys.AddRange(keys);
-        Debug.Log($"[BusController] SlotKeys count: {_slotKeys.Count}");
         SegmentColors = colors;
 
         for (int i = 0; i < keys.Count; i++)
@@ -66,7 +63,6 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
         {
             CurrentDirection = directions[0];
         }
-        Debug.Log($"[BusController] SlotKeys: {string.Join(", ", SlotKeys.ConvertAll(k => k.ValueAsString))}");
     }
     public void UpdateSlotKeys(List<GameKey> newKeys)
     {
@@ -91,8 +87,11 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
 
     public void OnSegmentClicked(Direction direction)
     {
-        Debug.Log($"Bus clicked with direction: {direction}");
-        BusMover.TryMove(this, direction, GridManager.Instance);
+        BusMover.TryMove(this, direction, GridManager.Instance, BusMoveSettings);
+    }
+    public void SetMoving(bool moving)
+    {
+        IsMoving = moving;
     }
 
     public void MoveTo(GameKey targetKey)

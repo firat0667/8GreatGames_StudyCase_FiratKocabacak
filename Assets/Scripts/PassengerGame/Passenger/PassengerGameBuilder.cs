@@ -31,6 +31,8 @@ namespace GreatGames.CaseLib.Passenger
 
         public bool Initialized { get; set; }
 
+        [SerializeField] BusMoverSettingsSO _busMoverSettingsSO;
+
         private void Start()
         {
             _gridManager = GridManager.Instance;
@@ -88,10 +90,8 @@ namespace GreatGames.CaseLib.Passenger
 
             foreach (var busData in busList)
             {
-                Debug.Log($"[BuildBuses] busData.Slots.Count: {busData.Slots?.Count}");
                 if (busData.Slots == null || busData.Slots.Count != 3)
                 {
-                    Debug.LogWarning("[BuildBuses] BusData hatalı! Slots eksik.");
                     continue;
                 }
                   
@@ -109,6 +109,7 @@ namespace GreatGames.CaseLib.Passenger
                 busGO.transform.SetParent(parentGO.transform, false);
 
                 var controller = busGO.AddComponent<BusController>();
+                controller.BusMoveSettings = _busMoverSettingsSO;
                 controller.Initialize(
                     keys: slotKeys,
                     colors: busData.Colors,
@@ -120,7 +121,6 @@ namespace GreatGames.CaseLib.Passenger
                 );
                 foreach (var key in slotKeys)
                 {
-                    Debug.Log($"[BuildBuses] Key ekleniyor: {key.ValueAsString}");
                     GridManager.Instance.PlaceMultiSlotItem(key, controller, force: true);
                 }
             }

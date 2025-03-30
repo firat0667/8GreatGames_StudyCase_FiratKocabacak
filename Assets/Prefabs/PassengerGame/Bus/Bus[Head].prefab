@@ -127,6 +127,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4354047296388319582}
   - component: {fileID: 4009494413116484496}
+  - component: {fileID: 5877250510649397519}
   m_Layer: 0
   m_Name: Bus[Head]
   m_TagString: Untagged
@@ -171,3 +172,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5877250510649397519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7675477236380355430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbe66787fa1edf438614c1d179e1961, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
