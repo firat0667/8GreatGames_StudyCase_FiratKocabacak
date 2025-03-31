@@ -1,6 +1,7 @@
 ﻿using GreatGames.CaseLib.Definitions;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace GreatGames.CaseLib.Passenger
         public bool Initialized { get; set; }
 
         [SerializeField] BusMoverSettingsSO _busMoverSettingsSO;
-
+        private Transform _levelContainer;
         private void Start()
         {
             _gridManager = GridManager.Instance;
@@ -40,11 +41,23 @@ namespace GreatGames.CaseLib.Passenger
 
         public void BuildLevel()
         {
+            if (_levelContainer != null)
+            {
+                Destroy(_levelContainer.gameObject);
+            }
+            _levelContainer = new GameObject("LevelContainer").transform;
+            _levelContainer.SetParent(transform);
             BuildBlocks();
             BuildDoors();
             BuildBuses();
             BuildPassengers();
             BuildWalls();
+        }
+        public void ClearLevel()
+        {
+            DoorManager.Instance.ClearAll();
+            Destroy(_levelContainer.gameObject); 
+            _levelContainer = null;
         }
 
         private void BuildBlocks()
@@ -53,7 +66,7 @@ namespace GreatGames.CaseLib.Passenger
             {
                 GameKey key = _gridManager.UpperGrid.CreateKeyFromIndex(block.SlotIndex);
                 Vector3 pos = _gridManager.GetSlotPosition(key, true);
-                var go = Instantiate(_blockPrefab, pos, Quaternion.identity, transform);
+                var go = Instantiate(_blockPrefab, pos, Quaternion.identity, _levelContainer);
                 ComponentUtils.SetNameBySlotType(go, SlotType.Block, key);
                 var dummy = new DummyBlockItem(go);
                 _gridManager.UpperGrid.PlaceItem(key, dummy, force: true);
@@ -63,7 +76,7 @@ namespace GreatGames.CaseLib.Passenger
         private void BuildDoors()
         {
             foreach (var door in _gridManager.LevelData.Doors)
-                DoorBuilder.Build(door, _gridManager, _doorPrefab, transform);
+                DoorBuilder.Build(door, _gridManager, _doorPrefab, _levelContainer);
         }
 
         private void BuildPassengers()
@@ -73,7 +86,7 @@ namespace GreatGames.CaseLib.Passenger
                     door,
                     _gridManager,
                     _passengerPrefab,
-                    transform,
+                    _levelContainer,
                     DistanceFromDoor,
                     PassengerYOffset
                 );
@@ -81,9 +94,8 @@ namespace GreatGames.CaseLib.Passenger
 
         private void BuildWalls()
         {
-            WallBuilder.BuildForGrid(_gridManager.UpperGrid, _gridManager, _wallPrefab, transform);
+            WallBuilder.BuildForGrid(_gridManager.UpperGrid, _gridManager, _wallPrefab, _levelContainer);
         }
-
         private void BuildBuses()
         {
             var busList = new List<BusData>(_gridManager.LevelData.Buses); 
@@ -102,15 +114,16 @@ namespace GreatGames.CaseLib.Passenger
 
                 Vector3 headPos = _gridManager.GetSlotPosition(slotKeys[0], true);
                 GameObject parentGO = new GameObject($"Bus_{slotKeys[0].ValueAsString}");
-                parentGO.transform.SetParent(transform);
+                parentGO.transform.SetParent(_levelContainer);
                 parentGO.transform.position = headPos;
 
                 GameObject busGO = new GameObject("BusRoot");
                 busGO.transform.SetParent(parentGO.transform, false);
 
-                var controller = busGO.AddComponent<BusController>();
-                controller.BusMoveSettings = _busMoverSettingsSO;
-                controller.Initialize(
+                var bus = busGO.AddComponent<BusController>();
+                _gridManager.RegisterItem(bus);
+                bus.BusMoveSettings = _busMoverSettingsSO;
+                bus.Initialize(
                     keys: slotKeys,
                     colors: busData.Colors,
                     directions: busData.Directions,
@@ -121,7 +134,7 @@ namespace GreatGames.CaseLib.Passenger
                 );
                 foreach (var key in slotKeys)
                 {
-                    GridManager.Instance.PlaceMultiSlotItem(key, controller, force: true);
+                    GridManager.Instance.PlaceMultiSlotItem(key, bus, force: true);
                 }
             }
         }

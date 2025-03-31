@@ -1,10 +1,14 @@
-﻿using UnityEngine;
-
+﻿using GreatGames.CaseLib.Grid;
+using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Managers;
+using System.Linq;
+using UnityEngine;
 public class BusSegmentClickHandler : MonoBehaviour
 {
     private BusController _busController;
     private int _segmentIndex;
     private Vector2 _start;
+
     private bool _hasSwiped = false;
     public void Initialize(BusController controller, int index)
     {
@@ -14,13 +18,26 @@ public class BusSegmentClickHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
-        _start = Input.mousePosition;
-        _hasSwiped = true;
+        if (!_busController.IsAllOccupied)
+        {
+            _busController.HasSwiped = false;
+            _start = Input.mousePosition;
+            _hasSwiped = true;
+            _busController.ApplySegmentHighlight();
+        }
     }
 
     private void OnMouseUp()
     {
-        _hasSwiped = false;
+        if (!_busController.IsAllOccupied)
+        {
+            _hasSwiped = false;
+            _busController.HasSwiped = true;
+            _busController.OnMoveCompleteAfterSwipe();
+            _busController.ResetSegmentHighlight();
+        }
+      
+
     }
     private void Update()
     {

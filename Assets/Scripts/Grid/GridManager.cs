@@ -3,11 +3,10 @@ using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Passenger;
 using GreatGames.CaseLib.Patterns;
 using GreatGames.CaseLib.Signals;
-using GreatGames.CaseLib.Slinky;
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 namespace GreatGames.CaseLib.Grid
 {

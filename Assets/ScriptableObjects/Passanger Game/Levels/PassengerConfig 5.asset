@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ba268ac58fcefc46b900ebf6ee2b3da, type: 3}
+  m_Name: PassengerConfig 5
+  m_EditorClassIdentifier: 
+  UpperGridSize: {x: 7, y: 7}
+  LowerGridSize: {x: 0, y: 0}
+  Slinkies: []
+  Buses:
+  - Slots: 160000001700000018000000
+    Colors: 010000000100000002000000
+    Directions: 020000000200000002000000
+  - Slots: 2f0000002800000021000000
+    Colors: 030000000000000001000000
+    Directions: 020000000200000002000000010000000100000001000000
+  - Slots: 020000000100000000000000
+    Colors: 040000000300000004000000
+    Directions: 020000000200000002000000010000000100000001000000030000000300000003000000
+  Doors:
+  - SlotIndex: 45
+    IncomingColors: 0400000003000000
+    IncomingCounts: 0400000004000000
+    EnterDirection: 1
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  - SlotIndex: 27
+    IncomingColors: 030000000100000001000000
+    IncomingCounts: 020000000400000002000000
+    EnterDirection: 3
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  - SlotIndex: 3
+    IncomingColors: 010000000200000000000000
+    IncomingCounts: 020000000200000004000000
+    EnterDirection: 0
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  Blocks:
+  - SlotIndex: 21
+  - SlotIndex: 32
+  - SlotIndex: 41
+  - SlotIndex: 18
+  - SlotIndex: 8
+  - SlotIndex: 15
+  - SlotIndex: 13
+  - SlotIndex: 37
+  - SlotIndex: 5

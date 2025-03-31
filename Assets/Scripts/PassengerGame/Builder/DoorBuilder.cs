@@ -1,7 +1,7 @@
 using GreatGames.CaseLib.Definitions;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
-using GreatGames.CaseLib.Passenger;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,6 +19,9 @@ public static class DoorBuilder
         var doorGO = Object.Instantiate(prefab, finalPos, rotation, parent);
         ComponentUtils.SetNameBySlotType(doorGO, SlotType.Door, key);
         SetDoorColors(doorGO, data.IncomingColors);
+        var controller = doorGO.AddComponent<DoorController>();
+        DoorManager.Instance.RegisterDoor(controller);
+        controller.Initialize(key);
         return doorGO;
     }
 

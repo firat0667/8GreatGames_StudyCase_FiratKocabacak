@@ -1,3 +1,4 @@
+using GreatGames.CaseLib.Key;
 using GreatGames.CaseLib.Utility;
 using System.Collections.Generic;
 
@@ -10,6 +11,16 @@ public class BusData : ISlotData
     public List<Direction> Directions;
     int ISlotData.SlotIndex => Slots != null && Slots.Count > 0 ? Slots[0] : -1;
 }
+public class BusSeatInfo
+{
+    public GameKey SlotKey;          
+    public ItemColor Color;          
+    public int Capacity;           
+    public int Occupied;            
+    public bool IsFull => Occupied >= Capacity;
+   
+}
+
 public enum Direction { Up, Down, Left, Right,
     None
 }

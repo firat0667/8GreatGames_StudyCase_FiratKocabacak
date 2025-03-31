@@ -1,8 +1,10 @@
 ﻿using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Utility;
-using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public static class PassengerSpawner
 {
@@ -44,8 +46,15 @@ public static class PassengerSpawner
             var passenger = GameObject.Instantiate(passengerPrefab, finalPos, rotation, parent);
             var ctrl = passenger.GetComponent<PassengerController>();
             var color = GetColorByIndex(door, ref counter);
+            ctrl.Initialize(doorKey, color);
             ctrl.SpawnAtOffset(finalPos, color);
 
+            var doorController = DoorManager.Instance.GetDoorAt(doorKey);
+
+            if (doorController != null)
+            {
+                doorController.AddPassenger(ctrl);
+            }
             previousPos = finalPos;
         }
     }
@@ -108,19 +117,22 @@ public static class PassengerSpawner
         return total;
     }
 
-    private static ItemColor GetColorByIndex(DoorData door, ref int index)
+    private static ItemColor GetColorByIndex(DoorData door, ref int globalIndex)
     {
+        int localIndex = globalIndex;
         for (int i = 0; i < door.IncomingCounts.Count; i++)
         {
-            if (index < door.IncomingCounts[i])
+            if (localIndex < door.IncomingCounts[i])
             {
-                index++;
+                globalIndex++; 
                 return door.IncomingColors[i];
             }
-            index -= door.IncomingCounts[i];
+            localIndex -= door.IncomingCounts[i];
         }
+
         return ItemColor.Red;
     }
+
 
     private static Vector3 GetDirectionOffset(Direction dir)
     {

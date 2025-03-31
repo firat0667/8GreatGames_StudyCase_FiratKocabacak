@@ -15,6 +15,7 @@ public class TurnPool : MonoBehaviour
     {
         if(_type==ParticleType.Merge) _pool = PoolManager.Instance.GetMergeVFXPool();
         else if (_type == ParticleType.Success) _pool = PoolManager.Instance.GetSuccessVFXPool();
+        else if(_type == ParticleType.Hole) _pool = PoolManager.Instance.GetMergeHolePool();
         DOVirtual.DelayedCall(_turnPoolTime, () =>
         {
             if (_pool != null)

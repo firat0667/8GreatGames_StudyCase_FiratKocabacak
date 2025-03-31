@@ -81,7 +81,10 @@ public static class BusMover
                 {
                     completed++;
                     if (completed == bus.Segments.Count)
+                    {
                         onComplete?.Invoke();
+                        bus.OnMoveCompleteAfterSwipe();
+                    }
                 });
         }
     }

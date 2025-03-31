@@ -16,19 +16,13 @@ MonoBehaviour:
   LowerGridSize: {x: 0, y: 0}
   Slinkies: []
   Buses:
-  - Slots: 000000000300000004000000
-    Colors: 000000000200000004000000
-    Directions: 000000000000000002000000
+  - Slots: 080000000700000006000000
+    Colors: 020000000000000002000000
+    Directions: 030000000300000003000000
   Doors:
-  - SlotIndex: 2
-    IncomingColors: 04000000
-    IncomingCounts: 04000000
-    EnterDirection: 3
-    PathLineObject: {fileID: 2584064992892490678, guid: 47308aed54a892142acd79b433e371b8, type: 3}
-  - SlotIndex: 7
-    IncomingColors: 00000000
-    IncomingCounts: 04000000
-    EnterDirection: 1
-    PathLineObject: {fileID: 2584064992892490678, guid: 47308aed54a892142acd79b433e371b8, type: 3}
-  Blocks:
-  - SlotIndex: 8
+  - SlotIndex: 1
+    IncomingColors: 0200000000000000
+    IncomingCounts: 0400000004000000
+    EnterDirection: 0
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  Blocks: []

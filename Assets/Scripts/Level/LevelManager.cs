@@ -37,6 +37,7 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
         ProgressData.CurrentLevelIndex = (ProgressData.CurrentLevelIndex + 1) % ProgressData.Levels.Count;
         ProgressData.CurrentLevelCount++;
         StartCoroutine(LoadLevelRoutine());
+
     }
 
     public void RestartLevel()
@@ -46,6 +47,7 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
         GridManager.Instance.ClearAll();
         StartCoroutine(LoadLevelRoutine());
     }
+
 
     private IEnumerator LoadLevelRoutine()
     {
@@ -122,5 +124,8 @@ public class LevelManager : FoundationSingleton<LevelManager>, IFoundationSingle
         {
             currentLevel.LevelController.DestroyLevel();
         }
+        if (GameType == GameType.PassengerGame)
+         PassengerGameBuilder.Instance.ClearLevel();
+       
     }
 }

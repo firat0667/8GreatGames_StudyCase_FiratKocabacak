@@ -1,8 +1,13 @@
-using System.Collections.Generic;
-using UnityEngine;
-using GreatGames.CaseLib.Key;
+﻿using DG.Tweening;
+using GreatGames.CaseLib.Game;
 using GreatGames.CaseLib.Grid;
+using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Utility;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class BusController : MonoBehaviour, ISlotItem, IMatchable
 {
@@ -18,15 +23,26 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     public bool IsMovable => true;
     public bool IsMarkedForMatch { get; set; }
     GameKey ISlotItem.SlotIndex { get ; set ; }
-    ItemColor ISlotItem.ItemColor { get ; set; }
-    public bool IsMoving { get; private set; }
+    public bool IsMoving { get;  set; }
     public BusMoverSettingsSO BusMoveSettings { get; set; }
+
+    public bool HasSwiped { get; set; } = false;
+
+    public List<BusSeatInfo> Seats { get; private set; } = new();
+
+    public List<List<Transform>> SegmentSeats { get; private set; } = new();
+    public List<List<bool>> SeatOccupancy { get; private set; } = new();
+
+    public bool IsAllOccupied;
+
+
     public void Initialize(List<GameKey> keys, List<ItemColor> colors, List<Direction> directions, GridManager gridManager,
-                           GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
+                         GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
     {
         _slotKeys.Clear();
         _slotKeys.AddRange(keys);
         SegmentColors = colors;
+        Segments.Clear();
 
         for (int i = 0; i < keys.Count; i++)
         {
@@ -63,7 +79,41 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
         {
             CurrentDirection = directions[0];
         }
+        Seats.Clear();
+        for (int i = 0; i < SlotKeys.Count; i++)
+        {
+            Seats.Add(new BusSeatInfo
+            {
+                SlotKey = SlotKeys[i],
+                Color = SegmentColors[i],
+                Capacity = (i == 1) ? 4 : 2,
+                Occupied = 0
+            });
+        }
+        SegmentSeats.Clear();
+        SeatOccupancy.Clear();
+
+        foreach (var segment in Segments)
+        {
+            var seatsInSegment = segment.GetComponentsInChildren<Transform>();
+
+            List<Transform> seatList = new();
+            List<bool> occupancyList = new();
+
+            foreach (var seat in seatsInSegment)
+            {
+                if (seat.name.StartsWith("Seat_"))
+                {
+                    seatList.Add(seat);
+                    occupancyList.Add(false);
+                }
+            }
+
+            SegmentSeats.Add(seatList);
+            SeatOccupancy.Add(occupancyList);
+        }
     }
+
     public void UpdateSlotKeys(List<GameKey> newKeys)
     {
         _slotKeys.Clear();
@@ -72,6 +122,31 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     public void SetDirection(Direction newDir)
     {
         CurrentDirection = newDir;
+    }
+    public bool CanPassengerMatchBus(PassengerController passenger, List<ItemColor> busColors)
+    {
+        return busColors.Contains(passenger.ItemColor);
+    }
+    public bool TryGetAvailableSeat(ItemColor color, out int segmentIndex, out int seatIndex)
+    {
+        for (int i = 0; i < SlotKeys.Count; i++)
+        {
+            if (SegmentColors[i] != color) continue;
+
+            for (int j = 0; j < SeatOccupancy[i].Count; j++)
+            {
+                if (!SeatOccupancy[i][j])
+                {
+                    segmentIndex = i;
+                    seatIndex = j;
+                    return true;
+                }
+            }
+        }
+
+        segmentIndex = -1;
+        seatIndex = -1;
+        return false;
     }
     public Quaternion GetRotationFromDirection(Direction dir)
     {
@@ -84,7 +159,97 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
             _ => Quaternion.identity
         };
     }
+    public void OnMoveCompleteAfterSwipe()
+    {
+      if (HasSwiped) { 
 
+         foreach (var key in OccupiedGridKeys)
+         {
+            if (!key.IsUpper()) continue;
+
+            var door = DoorManager.Instance.GetDoorAt(key);
+            if (door != null)
+            {
+              door.TryMatchAndAssignPassengerToBus(this);
+            }
+         }
+       }
+    }
+    public void ApplySegmentHighlight()
+    {
+        for (int i = 0; i < Segments.Count; i++)
+        {
+            var tf = Segments[i].transform;
+            tf.DOScale(1.12f, 0.15f).SetEase(Ease.OutBack);
+
+            if (Segments[i].TryGetComponentInChildren<Renderer>(out var renderer))
+            {
+                Color originalColor = ItemColorUtility.GetColor(SegmentColors[i]);
+                Color brightened = Color.Lerp(originalColor, Color.white, 0.4f);
+                renderer.material.color = brightened;
+            }
+        }
+    }
+
+    public void ResetSegmentHighlight()
+    {
+        for (int i = 0; i < Segments.Count; i++)
+        {
+            var tf = Segments[i].transform;
+            tf.DOScale(Vector3.one, 0.15f).SetEase(Ease.InOutSine);
+
+            if (Segments[i].TryGetComponentInChildren<Renderer>(out var renderer))
+            {
+                Color originalColor = ItemColorUtility.GetColor(SegmentColors[i]);
+                renderer.material.DOColor(originalColor, 0.15f);
+            }
+        }
+    }
+
+    public bool AreAllSeatsFull()
+    {
+        foreach (var occupancyList in SeatOccupancy)
+        {
+            foreach (var occupied in occupancyList)
+            {
+                if (!occupied) return false;
+            }
+        }
+        StartFullBusSequence();
+        return true;
+    }
+    public void StartFullBusSequence()
+    {
+        IsAllOccupied = true;
+        Transform tailSegment = Segments[Segments.Count - 1].transform;
+        VFXManager.Instance.HoleMergeSpawner(new Vector3(tailSegment.position.x, tailSegment.position.y + 1f, tailSegment.position.z));
+        StartCoroutine(DestroyBusRoutine(tailSegment.position));
+    }
+    private IEnumerator DestroyBusRoutine(Vector3 targetPosition)
+    {
+        for (int i = Segments.Count - 1; i >= 0; i--)
+        {
+            var segment = Segments[i];
+            segment.transform.DOJump(targetPosition, 2f, 1, 0.4f).SetEase(Ease.Flash);
+
+            yield return new WaitForSeconds(.5f);
+            segment.SetActive(false); 
+        }
+        yield return new WaitForSeconds(1f);
+        SlotKeys.ForEach(key => GridManager.Instance.RemoveItemAt(key));
+        GridManager.Instance.RemoveItem(this);
+        gameObject.SetActive(false);
+        GameManager.Instance.CheckForCompletion();
+    }
+    public Transform GetSegmentTransform(GameKey key)
+    {
+        int index = SlotKeys.IndexOf(key);
+        if (index >= 0 && index < Segments.Count)
+        {
+            return Segments[index].transform;
+        }
+        return null;
+    }
     public void OnSegmentClicked(Direction direction)
     {
         BusMover.TryMove(this, direction, GridManager.Instance, BusMoveSettings);

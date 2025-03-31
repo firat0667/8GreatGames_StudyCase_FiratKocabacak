@@ -13,6 +13,7 @@ public interface IMatchable
     bool MatchesWith(IMatchable other);
     void OnMatchedAsTarget();
     void OnMatchedAsMover(GameKey targetSlot);
+  
 }
 public interface IMatchRule
 {
@@ -82,16 +83,3 @@ public static class MatchableExtensions
         return false;
     }
 }
-
-//List<IMatchable> matchableList = ...;
-//IMatchable myItem = ...;
-
-//if (matchableList.TryFindMatch(myItem, out var matchedItem))
-//{
-//    // matched 
-//    Debug.Log($"Match found with: {matchedItem.SlotIndex}");
-//}
-//else
-//{
-//    // not match
-//}

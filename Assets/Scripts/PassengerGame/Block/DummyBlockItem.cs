@@ -10,7 +10,6 @@ public class DummyBlockItem : ISlotItem
     public List<GameKey> OccupiedGridKeys { get; } = new();
     public ItemColor ItemColor => ItemColor.Red;
     public bool IsMovable => false;
-    ItemColor ISlotItem.ItemColor { get; set; }
 
     public DummyBlockItem(GameObject root)
     {

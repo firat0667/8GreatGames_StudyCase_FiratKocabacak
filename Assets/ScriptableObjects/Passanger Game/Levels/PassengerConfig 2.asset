@@ -12,21 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ba268ac58fcefc46b900ebf6ee2b3da, type: 3}
   m_Name: PassengerConfig 2
   m_EditorClassIdentifier: 
-  UpperGridSize: {x: 6, y: 6}
+  UpperGridSize: {x: 5, y: 4}
   LowerGridSize: {x: 0, y: 0}
   Slinkies: []
   Buses:
-  - Slots: 0f000000150000001b000000
-    Colors: 000000000000000000000000
-    Directions: 000000000000000000000000
-  - Slots: 19000000130000000d000000
-    Colors: 020000000200000002000000
-    Directions: 010000000100000001000000
+  - Slots: 0b0000000c00000011000000
+    Colors: 000000000100000002000000
+    Directions: 020000000200000000000000
+  - Slots: 090000000e00000013000000
+    Colors: 020000000100000004000000
+    Directions: 020000000200000000000000000000000000000000000000
   Doors:
-  - SlotIndex: 4
-    IncomingColors: 00000000
-    IncomingCounts: 04000000
+  - SlotIndex: 2
+    IncomingColors: 040000000000000001000000
+    IncomingCounts: 020000000200000004000000
     EnterDirection: 0
-    PathLineObject: {fileID: 2584064992892490678, guid: 47308aed54a892142acd79b433e371b8, type: 3}
-  Blocks:
-  - SlotIndex: 7
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  - SlotIndex: 5
+    IncomingColors: 0200000001000000
+    IncomingCounts: 0400000004000000
+    EnterDirection: 2
+    PathLineObject: {fileID: 5905294293672471599, guid: e39f9bfc2b8f2d64482b2a137a3294b2, type: 3}
+  Blocks: []

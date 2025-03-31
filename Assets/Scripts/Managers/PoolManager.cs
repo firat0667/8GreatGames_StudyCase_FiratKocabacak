@@ -8,10 +8,15 @@ public class PoolManager : FoundationSingleton<PoolManager>, IFoundationSingleto
     public bool Initialized { get; set; }
     [SerializeField] private GameObjectPool _mergeVfxPool;
     [SerializeField] private GameObjectPool _succesVfxPool;
+    [SerializeField] private GameObjectPool _mergeHolePool;
 
     public GameObjectPool GetMergeVFXPool()
     {
        return _mergeVfxPool;
+    }
+    public GameObjectPool GetMergeHolePool()
+    {
+        return _mergeHolePool;
     }
     public GameObjectPool GetSuccessVFXPool()
     {

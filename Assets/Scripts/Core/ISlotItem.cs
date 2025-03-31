@@ -10,7 +10,6 @@ public interface ISlotItem
     void MoveTo(GameKey key); 
     GameObject Root { get; }
     GameKey SlotIndex { get; set; }
-    ItemColor ItemColor { get; set; }
 
 }
 
