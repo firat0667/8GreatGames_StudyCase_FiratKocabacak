@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fedc50d9a668514c9d2797c5248a8c8, type: 3}
   m_Name: PassegerGameLevelData
   m_EditorClassIdentifier: 
-  CurrentLevelIndex: 3
-  CurrentLevelCount: 18
+  CurrentLevelIndex: 0
+  CurrentLevelCount: 0
   Levels:
   - {fileID: 11400000, guid: 7d8c3c0d47f09904882924165909b866, type: 2}
   - {fileID: 11400000, guid: 664c1b3096a1f174db36d3061577f9de, type: 2}
