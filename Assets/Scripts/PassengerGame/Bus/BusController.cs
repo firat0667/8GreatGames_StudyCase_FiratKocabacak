@@ -227,29 +227,37 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     }
     private IEnumerator DestroyBusRoutine(Vector3 targetPosition)
     {
+        var settings = BusMoveSettings;
+
         for (int i = Segments.Count - 1; i >= 0; i--)
         {
             var segment = Segments[i];
-            segment.transform.DOJump(targetPosition, 2f, 1, 0.4f).SetEase(Ease.Flash);
+            Sequence seq = DOTween.Sequence();
+            seq.Join(segment.transform.DOJump(
+                targetPosition,
+                settings.DestroyJumpPower,
+                1,
+                settings.DestroyJumpDuration
+            ).SetEase(settings.DestroyEase));
 
-            yield return new WaitForSeconds(.5f);
-            segment.SetActive(false); 
+            seq.Join(segment.transform.DOScale(
+                settings.DestroyScale,
+                settings.DestroyJumpDuration
+            ).SetEase(settings.DestroyScaleEase));
+
+            yield return new WaitForSeconds(settings.DelayBetweenSegmentDestruction);
+
+            segment.SetActive(false);
         }
+
         yield return new WaitForSeconds(1f);
+
         SlotKeys.ForEach(key => GridManager.Instance.RemoveItemAt(key));
         GridManager.Instance.RemoveItem(this);
         gameObject.SetActive(false);
         GameManager.Instance.CheckForCompletion();
     }
-    public Transform GetSegmentTransform(GameKey key)
-    {
-        int index = SlotKeys.IndexOf(key);
-        if (index >= 0 && index < Segments.Count)
-        {
-            return Segments[index].transform;
-        }
-        return null;
-    }
+
     public void OnSegmentClicked(Direction direction)
     {
         BusMover.TryMove(this, direction, GridManager.Instance, BusMoveSettings);

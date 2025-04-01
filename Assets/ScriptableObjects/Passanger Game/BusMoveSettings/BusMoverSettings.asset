@@ -16,3 +16,10 @@ MonoBehaviour:
   MoveEase: 32
   RotationSpeed: 0
   RotationEase: 4
+  ShakePower: 0.25
+  DestroyJumpPower: 1
+  DestroyJumpDuration: 0.35
+  DestroyEase: 26
+  DestroyScale: 0.5
+  DestroyScaleEase: 4
+  DelayBetweenSegmentDestruction: 0.35

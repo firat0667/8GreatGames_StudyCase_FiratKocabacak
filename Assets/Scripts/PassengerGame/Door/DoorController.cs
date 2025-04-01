@@ -1,6 +1,7 @@
 ﻿using DG.Tweening;
 using GreatGames.CaseLib.Grid;
 using GreatGames.CaseLib.Key;
+using GreatGames.CaseLib.Managers;
 using GreatGames.CaseLib.Utility;
 using JetBrains.Annotations;
 using System.Collections;
@@ -17,13 +18,15 @@ public class DoorController : MonoBehaviour, IMatchable, ISlotItem
     public GameObject Root => gameObject;
     private readonly List<PassengerController> _passengers = new();
 
-
+    private PassengerMoveSettingsSO moveSettings;
 
     public void Initialize(GameKey key)
     {
         SlotIndex = key;
         OccupiedGridKeys.Clear();
         OccupiedGridKeys.Add(key);
+        moveSettings = DoorManager.Instance.MoveSettigs;
+       
     }
     public void UpdateColorByFirstPassenger()
     {
@@ -58,13 +61,11 @@ public class DoorController : MonoBehaviour, IMatchable, ISlotItem
     }
     public void TryMatchAndAssignPassengerToBus(BusController bus)
     {
-     
         if (_passengers.Count == 0 || !bus.HasSwiped) return;
+
         var passenger = _passengers[0];
         if (!bus.TryGetAvailableSeat(passenger.ItemColor, out int segmentIndex, out int seatIndex))
-        {
             return;
-        }
 
         List<Vector3> originalPositions = new();
         foreach (var p in _passengers)
@@ -74,41 +75,52 @@ public class DoorController : MonoBehaviour, IMatchable, ISlotItem
         Vector3 seatPos = seatTransform.position;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(passenger.transform.DOScale(1.5f, 0.1f));
-        seq.Append(passenger.transform.DOJump(seatPos, 0.5f, 1, 0.1f));
-        seq.Append(passenger.transform.DOScale(Vector3.one, 0.1f));
+
+     
+
+        float scaleUp = moveSettings.scaleUp;
+        float scaleDuration = moveSettings.scaleDuration;
+        float jumpPower = moveSettings.jumpPower;
+        float jumpDuration = moveSettings.jumpDuration;
+        int jumpCount = moveSettings.jumpCount;
+        Ease jumpEase = moveSettings.jumpEase;
+        Ease scaleEase = moveSettings.scaleEase;
+        float moveDelay = moveSettings.moveDelayBetweenPassengers;
+
+        seq.Append(passenger.transform.DOScale(scaleUp, scaleDuration).SetEase(scaleEase));
+        seq.Append(passenger.transform.DOJump(seatPos, jumpPower, jumpCount, jumpDuration).SetEase(jumpEase));
+        seq.Append(passenger.transform.DOScale(Vector3.one, scaleDuration).SetEase(Ease.InOutSine));
 
         for (int i = 1; i < _passengers.Count; i++)
         {
-            _passengers[i].transform.DOMove(originalPositions[i - 1], 0.2f).SetEase(Ease.OutQuad);
+            _passengers[i].transform.DOMove(originalPositions[i - 1], moveDelay).SetEase(Ease.OutQuad);
             _passengers[i].transform.DOLookAt(originalPositions[i - 1], 0.1f);
         }
-
         seq.OnComplete(() =>
         {
-           
             passenger.transform.SetParent(seatTransform, true);
             passenger.transform.localPosition = Vector3.zero;
             passenger.transform.localRotation = Quaternion.identity;
             passenger.transform.localScale = Vector3.one;
+            passenger.GetComponentInChildren<PassengerAnim>().PlayPassengerSit();
             VFXManager.Instance.PlayMergeParticle(seatTransform.position);
             bus.SeatOccupancy[segmentIndex][seatIndex] = true;
-            var segmentTransform = bus.Segments[segmentIndex].transform;
 
+            var segmentTransform = bus.Segments[segmentIndex].transform;
             segmentTransform.DOShakeScale(
                 duration: 0.3f,
                 strength: new Vector3(0.25f, 0.25f, 0.25f),
                 vibrato: 10,
                 randomness: 90
-            )
-            .OnComplete(() =>
+            ).OnComplete(() =>
             {
                 segmentTransform.DOScale(Vector3.one, 0.3f);
                 bus.AreAllSeatsFull();
             });
+
             RemovePassenger(passenger);
             UpdateColorByFirstPassenger();
-            TryMatchAndAssignPassengerToBus(bus); 
+            TryMatchAndAssignPassengerToBus(bus);
         });
     }
 

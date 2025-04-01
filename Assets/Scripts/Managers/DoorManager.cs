@@ -10,7 +10,8 @@ namespace GreatGames.CaseLib.Managers
     public class DoorManager : FoundationSingleton<DoorManager>, IFoundationSingleton
     {
         private readonly List<DoorController> _doors = new();
-
+        public PassengerMoveSettingsSO MoveSettigs => _moveSettings;
+        [SerializeField] private PassengerMoveSettingsSO _moveSettings;
         public bool Initialized { get; set; }
 
         public void RegisterDoor(DoorController door)
