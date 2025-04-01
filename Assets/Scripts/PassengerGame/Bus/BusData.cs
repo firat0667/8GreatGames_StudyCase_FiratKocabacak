@@ -20,7 +20,6 @@ public class BusSeatInfo
     public bool IsFull => Occupied >= Capacity;
    
 }
-
 public enum Direction { Up, Down, Left, Right,
     None
 }

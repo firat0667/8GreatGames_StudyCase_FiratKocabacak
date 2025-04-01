@@ -49,6 +49,32 @@ public class PassengerController : MonoBehaviour,IMatchable
         transform.position = finalPos;
     }
 
+    public void JumpToSeat(Transform seatTransform, PassengerMoveSettingsSO moveSettings, System.Action onComplete)
+    {
+        Sequence seq = DOTween.Sequence();
+
+        seq.Append(transform.DOScale(moveSettings.scaleUp, moveSettings.scaleDuration).SetEase(moveSettings.scaleEase));
+        seq.Append(transform.DOJump(
+            seatTransform.position,
+            moveSettings.jumpPower,
+            moveSettings.jumpCount,
+            moveSettings.jumpDuration
+        ).SetEase(moveSettings.jumpEase));
+        seq.Append(transform.DOScale(Vector3.one, moveSettings.scaleDuration).SetEase(Ease.InOutSine));
+
+        seq.OnComplete(() =>
+        {
+            transform.SetParent(seatTransform, true);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one;
+
+            GetComponentInChildren<PassengerAnim>()?.PlayPassengerSit();
+
+            onComplete?.Invoke();
+        });
+    }
+
     public bool MatchesWith(IMatchable other)
     {
         throw new System.NotImplementedException();
@@ -56,12 +82,10 @@ public class PassengerController : MonoBehaviour,IMatchable
 
     public void OnMatchedAsTarget()
     {
-        throw new System.NotImplementedException();
     }
 
     public void OnMatchedAsMover(GameKey targetSlot)
     {
-        throw new System.NotImplementedException();
     }
 
 }

@@ -25,11 +25,8 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
     GameKey ISlotItem.SlotIndex { get ; set ; }
     public bool IsMoving { get;  set; }
     public BusMoverSettingsSO BusMoveSettings { get; set; }
-
     public bool HasSwiped { get; set; } = false;
-
     public List<BusSeatInfo> Seats { get; private set; } = new();
-
     public List<List<Transform>> SegmentSeats { get; private set; } = new();
     public List<List<bool>> SeatOccupancy { get; private set; } = new();
 
@@ -37,22 +34,27 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
 
 
     public void Initialize(List<GameKey> keys, List<ItemColor> colors, List<Direction> directions, GridManager gridManager,
-                         GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
+                           GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
     {
         _slotKeys.Clear();
         _slotKeys.AddRange(keys);
         SegmentColors = colors;
         Segments.Clear();
 
+        CreateSegments(keys, directions, colors, gridManager, headPrefab, midPrefab, tailPrefab);
+        SetupSeatData();
+        SetupClickHandlers(directions);
+    }
+    private void CreateSegments(List<GameKey> keys, List<Direction> directions, List<ItemColor> colors,
+                            GridManager gridManager, GameObject headPrefab, GameObject midPrefab, GameObject tailPrefab)
+    {
         for (int i = 0; i < keys.Count; i++)
         {
-            GameObject segmentPrefab = i == 0 ? headPrefab :
-                                        i == 1 ? midPrefab : tailPrefab;
-
+            GameObject prefab = i == 0 ? headPrefab : (i == 1 ? midPrefab : tailPrefab);
             Vector3 pos = gridManager.GetSlotPosition(keys[i], true);
             Quaternion rot = GetRotationFromDirection(i < directions.Count ? directions[i] : Direction.Up);
 
-            GameObject segment = Instantiate(segmentPrefab, Vector3.zero, Quaternion.identity);
+            GameObject segment = Instantiate(prefab, Vector3.zero, Quaternion.identity);
             segment.transform.SetParent(transform, false);
             segment.transform.localPosition = pos - gridManager.GetSlotPosition(keys[0], true);
             segment.transform.localRotation = rot;
@@ -62,23 +64,28 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
                 renderer.material.color = ItemColorUtility.GetColor(colors[i]);
             }
 
-            if (segment.TryGetComponent<BusSegmentClickHandler>(out var handler))
-            {
-                handler.Initialize(this, i);
-            }
-            else
-            {
-                var clickHandler = segment.AddComponent<BusSegmentClickHandler>();
-                clickHandler.Initialize(this, i);
-            }
-
             Segments.Add(segment);
+        }
+    }
+
+    private void SetupClickHandlers(List<Direction> directions)
+    {
+        for (int i = 0; i < Segments.Count; i++)
+        {
+            if (!Segments[i].TryGetComponent<BusSegmentClickHandler>(out var handler))
+                handler = Segments[i].AddComponent<BusSegmentClickHandler>();
+
+            handler.Initialize(this, i);
         }
 
         if (directions != null && directions.Count > 0)
         {
             CurrentDirection = directions[0];
         }
+    }
+
+    private void SetupSeatData()
+    {
         Seats.Clear();
         for (int i = 0; i < SlotKeys.Count; i++)
         {
@@ -90,17 +97,16 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
                 Occupied = 0
             });
         }
+
         SegmentSeats.Clear();
         SeatOccupancy.Clear();
 
         foreach (var segment in Segments)
         {
-            var seatsInSegment = segment.GetComponentsInChildren<Transform>();
+            var seatList = new List<Transform>();
+            var occupancyList = new List<bool>();
 
-            List<Transform> seatList = new();
-            List<bool> occupancyList = new();
-
-            foreach (var seat in seatsInSegment)
+            foreach (var seat in segment.GetComponentsInChildren<Transform>())
             {
                 if (seat.name.StartsWith("Seat_"))
                 {
@@ -113,6 +119,7 @@ public class BusController : MonoBehaviour, ISlotItem, IMatchable
             SeatOccupancy.Add(occupancyList);
         }
     }
+
 
     public void UpdateSlotKeys(List<GameKey> newKeys)
     {
